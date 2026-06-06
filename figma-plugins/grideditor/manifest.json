@@ -1,0 +1,17 @@
+{
+    "name": "GridEditor | Table Creator & Editor",
+    "id": "1631306873580716777",
+    "api": "1.0.0",
+    "main": "code.js",
+    "ui": "ui.html",
+    "editorType": ["figma"],
+    "networkAccess": {
+      "allowedDomains": [
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com"  
+      ],
+      "reasoning": "This plugin loads Google Fonts to render the plugin interface typography correctly. No Figma file data or user content is sent to these domains."
+    },
+    "documentAccess": "dynamic-page"
+  }
+  

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pomelo Suite Runtime Playground</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-title">Pomelo Suite Runtime</div>
+        <div class="brand-subtitle">Runtime Playground</div>
+      </div>
+      <nav class="tabs" aria-label="Playground features">
+        <button class="tab is-active" data-feature="work-queue">Work Queue</button>
+        <button class="tab" data-feature="scheduler">Scheduler</button>
+        <button class="tab" data-feature="calculator">Calculator</button>
+        <button class="tab" data-feature="tumblr">Tumblr Engine</button>
+        <button class="tab" data-feature="adapter">Adapter Actions</button>
+        <button class="tab" data-feature="cpu-worker">CPU Workers</button>
+        <button class="tab" data-feature="agent-workflow">Agent Workflow</button>
+        <button class="tab" data-feature="common">Common / Crypto</button>
+      </nav>
+      <div class="status-panel">
+        <div class="status-label">Server</div>
+        <div id="health" class="status-value">checking</div>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="toolbar">
+        <div>
+          <h1 id="feature-title">Work Queue</h1>
+          <p id="feature-summary">Run queued work with the ported WorkQueue and WorkItem classes.</p>
+        </div>
+        <div class="toolbar-actions">
+          <button id="sample-button" class="button secondary">Sample</button>
+          <button id="run-button" class="button primary">Run</button>
+        </div>
+      </header>
+
+      <section class="panes">
+        <div class="pane input-pane">
+          <div class="pane-header">
+            <h2>Input JSON</h2>
+            <span id="endpoint-label" class="endpoint">/api/run/work-queue</span>
+          </div>
+          <textarea id="input" spellcheck="false" aria-label="Input JSON"></textarea>
+        </div>
+
+        <div class="pane output-pane">
+          <div class="pane-header">
+            <h2>Result</h2>
+            <span id="elapsed" class="elapsed">-</span>
+          </div>
+          <pre id="result" class="output"></pre>
+        </div>
+      </section>
+
+      <section class="bottom-grid">
+        <div class="pane">
+          <div class="pane-header">
+            <h2>Console</h2>
+          </div>
+          <pre id="logs" class="output compact"></pre>
+        </div>
+        <div class="pane">
+          <div class="pane-header">
+            <h2>Process / Notes</h2>
+          </div>
+          <pre id="processes" class="output compact"></pre>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

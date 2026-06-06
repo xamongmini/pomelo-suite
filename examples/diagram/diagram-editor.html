@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram Editor</title>
+    <link rel="stylesheet" href="diagram-style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Diagram Editor</h1>
+        <div class="header-controls">
+            <button class="btn btn-primary" onclick="editor.newDiagram()">New Diagram</button>
+            <button class="btn btn-secondary" onclick="editor.saveDiagram()">Save</button>
+            <button class="btn btn-secondary" onclick="editor.loadDiagram()">Load</button>
+            <button class="btn btn-success" onclick="editor.exportDiagram()">Export</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>Tools</h3>
+                <div class="tool-grid">
+                    <div class="tool-btn active" data-tool="select">
+                        <div class="icon">↖</div>
+                        <div class="label">Select</div>
+                    </div>
+                    <div class="tool-btn" data-tool="rectangle">
+                        <div class="icon">□</div>
+                        <div class="label">Rectangle</div>
+                    </div>
+                    <div class="tool-btn" data-tool="ellipse">
+                        <div class="icon">○</div>
+                        <div class="label">Circle</div>
+                    </div>
+                    <div class="tool-btn" data-tool="line">
+                        <div class="icon">╱</div>
+                        <div class="label">Line</div>
+                    </div>
+                    <div class="tool-btn" data-tool="text">
+                        <div class="icon">T</div>
+                        <div class="label">Text</div>
+                    </div>
+                    <div class="tool-btn" data-tool="link">
+                        <div class="icon">→</div>
+                        <div class="label">Link</div>
+                    </div>
+                    <div class="tool-btn" data-tool="image">
+                        <div class="icon">🖼</div>
+                        <div class="label">Image</div>
+                    </div>
+                    <div class="tool-btn" data-tool="template">
+                        <div class="icon">⬢</div>
+                        <div class="label">Template</div>
+                    </div>
+                    <div class="tool-btn" data-tool="container">
+                        <div class="icon">⬚</div>
+                        <div class="label">Container</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <button class="btn btn-secondary" style="width: 100%" onclick="editor.showPageSettings()">
+                        Page Settings
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Smart Guide</h3>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showSmartGuides" checked onchange="editor.updateSmartGuideSettings()">
+                    <label for="showSmartGuides">Smart Guide </label>
+                </div>
+                <div class="form-group">
+                    <label for="smartGuideColor">Smart Guide :</label>
+                    <input type="color" id="smartGuideColor" class="color-input" value="#FF00FF" onchange="editor.updateSmartGuideSettings()">
+                </div>
+                <div class="form-group">
+                    <label for="snapDistance">Snap distance (px):</label>
+                    <input type="number" id="snapDistance" min="1" max="50" value="8" onchange="editor.updateSmartGuideSettings()">
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showCenterGuides" checked onchange="editor.updateSmartGuideSettings()">
+                    <label for="showCenterGuides">Show center guides</label>
+                </div>
+            </div>
+
+            <div class="sidebar-section properties-panel">
+                <h3>Properties</h3>
+                <div id="propertiesContent">
+                    <p style="color: #999; text-align: center; margin-top: 20px;">
+                         Select Properties .
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <div class="canvas-toolbar">
+                <div class="left">
+                    <button class="btn btn-secondary" id="undoBtn" onclick="editor.undo()">Undo</button>
+                    <button class="btn btn-secondary" id="redoBtn" onclick="editor.redo()">Redo</button>
+                    <button class="btn btn-secondary" onclick="editor.deleteSelected()">Delete</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn btn-secondary" onclick="editor.groupSelected()">Group</button>
+                    <button class="btn btn-secondary" onclick="editor.ungroupSelected()">Ungroup</button>
+                    <div class="toolbar-separator"></div>
+                    <div class="align-tools">
+                        <button class="align-btn" title="Align left" onclick="editor.alignNodes('left')">⬅</button>
+                        <button class="align-btn" title="Align center horizontally" onclick="editor.alignNodes('center')">↔</button>
+                        <button class="align-btn" title="Align right" onclick="editor.alignNodes('right')">➡</button>
+                        <button class="align-btn" title="Align top" onclick="editor.alignNodes('top')">⬆</button>
+                        <button class="align-btn" title="Align middle vertically" onclick="editor.alignNodes('middle')">↕</button>
+                        <button class="align-btn" title="Align bottom" onclick="editor.alignNodes('bottom')">⬇</button>
+                        <div class="toolbar-separator"></div>
+                        <button class="align-btn" title="Distribute horizontally" onclick="editor.distributeNodes('horizontal')">⬌</button>
+                        <button class="align-btn" title="Distribute vertically" onclick="editor.distributeNodes('vertical')">⬍</button>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="editor.zoomOut()">-</button>
+                        <span class="zoom-level" id="zoomLevel">100%</span>
+                        <button class="zoom-btn" onclick="editor.zoomIn()">+</button>
+                        <button class="zoom-btn" onclick="editor.resetZoom()">⌂</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <div class="ruler-corner"></div>
+                <div class="ruler-horizontal">
+                    <canvas id="rulerH" class="ruler-canvas"></canvas>
+                </div>
+                <div class="ruler-vertical">
+                    <canvas id="rulerV" class="ruler-canvas"></canvas>
+                </div>
+                <canvas id="diagramCanvas" width="1200" height="800"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="left">
+            <span id="statusText">Ready</span>
+        </div>
+        <div class="right">
+            <span id="mousePos">X: 0, Y: 0</span>
+        </div>
+    </div>
+
+    <!-- Text  -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="editor.copySelected()">Copy</div>
+        <div class="context-menu-item" onclick="editor.pasteSelected()">Paste</div>
+        <div class="context-menu-item" onclick="editor.deleteSelected()">Delete</div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="editor.bringToFront()">Bring to front</div>
+        <div class="context-menu-item" onclick="editor.sendToBack()">Send to back</div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="editor.groupSelected()">Group</div>
+        <div class="context-menu-item" onclick="editor.ungroupSelected()">Ungroup</div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="editor.editProperties()">Properties </div>
+    </div>
+
+    <!-- Properties   -->
+    <div class="modal" id="propertiesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Properties </h3>
+                <button class="modal-close" onclick="editor.closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="nodeName">Name:</label>
+                    <input type="text" id="nodeName" placeholder=" Name">
+                </div>
+                <div class="form-group">
+                    <label for="nodeText">Text:</label>
+                    <textarea id="nodeText" placeholder="  Text"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="fillColor">Background color:</label>
+                    <input type="color" id="fillColor" class="color-input">
+                </div>
+                <div class="form-group">
+                    <label for="lineColor">Border color:</label>
+                    <input type="color" id="lineColor" class="color-input">
+                </div>
+                <div class="form-group">
+                    <label for="lineWidth">Border width:</label>
+                    <input type="number" id="lineWidth" min="0" max="10" value="1">
+                </div>
+                <div class="form-group" id="linkStyleGroup" style="display: none;">
+                    <label for="linkStyle">Link :</label>
+                    <select id="linkStyle">
+                        <option value="straight">Line</option>
+                        <option value="curved">Line</option>
+                        <option value="orthogonal">Orthogonal</option>
+                    </select>
+                </div>
+                <div class="form-group" id="arrowTypeGroup" style="display: none;">
+                    <label for="arrowType">Arrow style:</label>
+                    <select id="arrowType">
+                        <option value="arrow">Arrow</option>
+                        <option value="none">None</option>
+                        <option value="circle">Circle</option>
+                        <option value="diamond">Diamond</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="editor.closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="editor.applyProperties()">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Settings  -->
+    <div class="modal" id="pageSettingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Page Settings</h3>
+                <button class="modal-close" onclick="editor.closePageSettings()">&times;</button>
+            </div>
+            <div class="modal-body page-settings-content">
+                <div class="settings-group">
+                    <h4>Page Size</h4>
+                    <div class="form-group">
+                        <label for="pageWidth">Width (px):</label>
+                        <input type="number" id="pageWidth" min="100" max="10000" value="1200">
+                    </div>
+                    <div class="form-group">
+                        <label for="pageHeight">Height (px):</label>
+                        <input type="number" id="pageHeight" min="100" max="10000" value="800">
+                    </div>
+                    <div class="form-group">
+                        <label for="pagePreset">Preset:</label>
+                        <select id="pagePreset" onchange="editor.applyPagePreset(this.value)">
+                            <option value="custom">Custom</option>
+                            <option value="a4">A4 (794 x 1123)</option>
+                            <option value="a3">A3 (1123 x 1587)</option>
+                            <option value="letter">Letter (816 x 1056)</option>
+                            <option value="1920x1080">FHD (1920 x 1080)</option>
+                            <option value="1280x720">HD (1280 x 720)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h4>Background</h4>
+                    <div class="form-group">
+                        <label for="bgColor">Background color:</label>
+                        <input type="color" id="bgColor" class="color-input" value="#ffffff">
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showGrid" checked>
+                        <label for="showGrid">Show grid</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="gridSize">Grid size:</label>
+                        <input type="number" id="gridSize" min="5" max="100" value="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="gridColor">Grid color:</label>
+                        <input type="color" id="gridColor" class="color-input" value="#e0e0e0">
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h4>Display options</h4>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showRulers" checked>
+                        <label for="showRulers">Show rulers</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="snapToGrid">
+                        <label for="snapToGrid">Snap to grid</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showPageBounds" checked>
+                        <label for="showPageBounds">Show page bounds</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="constrainToPage">
+                        <label for="constrainToPage">Constrain to page</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="editor.closePageSettings()">Cancel</button>
+                <button class="btn btn-primary" onclick="editor.applyPageSettings()">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template  -->
+    <div class="modal" id="templateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Template Select</h3>
+                <button class="modal-close" onclick="editor.closeTemplateModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="template-grid">
+                    <div class="template-item" onclick="editor.insertTemplate('process')">
+                        <div class="template-preview rect"></div>
+                        <div class="template-name"></div>
+                    </div>
+                    <div class="template-item" onclick="editor.insertTemplate('decision')">
+                        <div class="template-preview diamond"></div>
+                        <div class="template-name"></div>
+                    </div>
+                    <div class="template-item" onclick="editor.insertTemplate('data')">
+                        <div class="template-preview rect" style="transform: skewX(-20deg);"></div>
+                        <div class="template-name"></div>
+                    </div>
+                    <div class="template-item" onclick="editor.insertTemplate('start')">
+                        <div class="template-preview circle"></div>
+                        <div class="template-name">/</div>
+                    </div>
+                    <div class="template-item" onclick="editor.insertTemplate('document')">
+                        <div class="template-preview rect" style="border-bottom-left-radius: 30%; border-bottom-right-radius: 30%;"></div>
+                        <div class="template-name"></div>
+                    </div>
+                    <div class="template-item" onclick="editor.insertTemplate('database')">
+                        <div class="template-preview rect" style="border-radius: 50% / 20%;"></div>
+                        <div class="template-name"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="diagram-core.js"></script>
+</body>
+</html>

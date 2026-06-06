@@ -1,4 +1,4 @@
-# SpanGrid 0.1.0 API
+# SpanGrid 0.1.1 API
 
 This document describes the public API exposed by `src/span-grid.js`.
 
@@ -21,7 +21,7 @@ const { SpanGridControl, SpanGridCanvasView, VERSION } = require("@pomelo-suite/
 
 Exports:
 
-- `VERSION` - current version string, `0.1.0`
+- `VERSION` - current version string, `0.1.1`
 - `BorderDirection`
 - `SpanGridBorder`
 - `SpanGridCanvasView`
@@ -156,6 +156,8 @@ Methods:
 - `setFixedCell(cell)`
 - `clearFixed()`
 
+Merges cannot overlap an existing merge. `mergeCells()` throws a `RangeError` for overlapping ranges, while `fromJSON()` skips overlapping merge entries when restoring snapshots.
+
 ### Scrolling and Zoom
 
 ```js
@@ -252,6 +254,22 @@ Methods:
 - `setData(data, { expand = true }?)` - applies a two-dimensional array to cell text
 - `toJSON()` - returns a plain object with grid structure and styles
 - `SpanGridControl.fromJSON(snapshot)` - creates a new grid from a `toJSON()` snapshot
+
+### Export Helpers
+
+```js
+const image = await grid.toImage();
+const svg = grid.toSVG();
+const vector = grid.toVector();
+```
+
+Methods:
+
+- `toImage()` - returns a promise for `{ dataURL, width, height }` in browser-like environments, or `null` when canvas image export is unavailable
+- `toSVG()` - returns an SVG string rendered from the grid model
+- `toVector()` - returns an SVG string captured through the internal vector context
+
+HTML cell text is not converted into vector text. Export helpers render Canvas-owned backgrounds, text, borders, and layout state.
 
 ## SpanGridCanvasView
 

@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpanGrid Spreadsheet Example</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f5f7fa;
+      --panel: #ffffff;
+      --toolbar: #f8fafc;
+      --ink: #17202f;
+      --muted: #667085;
+      --line: #d9e1ea;
+      --line-strong: #b7c2d0;
+      --header: #eef3f8;
+      --header-active: #dbeafe;
+      --cell: #ffffff;
+      --cell-alt: #fcfdff;
+      --accent: #0f766e;
+      --accent-strong: #115e59;
+      --danger: #b42318;
+      --shadow: rgba(20, 33, 52, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--page);
+      font: 13px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 10px;
+      color: var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--line-strong);
+      background: #f9fafb;
+    }
+
+    button.primary {
+      border-color: var(--accent);
+      color: #fff;
+      background: var(--accent);
+    }
+
+    button.primary:hover {
+      background: var(--accent-strong);
+    }
+
+    button.danger {
+      color: var(--danger);
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+    }
+
+    .topbar {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      white-space: nowrap;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .top-meta {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .top-actions a {
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 10px;
+      color: var(--ink);
+      background: #fff;
+      text-decoration: none;
+    }
+
+    .formula-bar {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--toolbar);
+    }
+
+    .name-box,
+    .formula-input {
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 9px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .name-box {
+      text-align: center;
+      font: 12px/32px ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .formula-input {
+      width: 100%;
+      font: 12px ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .tool-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+      overflow: auto;
+    }
+
+    .tool-row .spacer {
+      flex: 1 1 auto;
+    }
+
+    .sheet-stage {
+      min-height: 0;
+      padding: 12px 16px;
+    }
+
+    .sheet-frame {
+      min-width: 0;
+      min-height: 360px;
+      height: calc(100vh - 197px);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 18px;
+      grid-template-rows: minmax(0, 1fr) 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel);
+      box-shadow: 0 14px 38px var(--shadow);
+    }
+
+    canvas {
+      grid-column: 1;
+      grid-row: 1;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: default;
+    }
+
+    .scroll-y {
+      grid-column: 2;
+      grid-row: 1;
+      width: 18px;
+      height: 100%;
+      writing-mode: vertical-rl;
+      direction: rtl;
+    }
+
+    .scroll-x {
+      grid-column: 1;
+      grid-row: 2;
+      width: 100%;
+      height: 28px;
+    }
+
+    .corner {
+      grid-column: 2;
+      grid-row: 2;
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      background: var(--header);
+    }
+
+    .span-grid-cell-editor {
+      border: 2px solid var(--accent);
+      border-radius: 3px;
+      padding: 0 5px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, .18);
+    }
+
+    .statusbar {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--panel);
+      font-size: 12px;
+    }
+
+    .statusbar strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .context-menu {
+      position: fixed;
+      z-index: 1000;
+      min-width: 210px;
+      display: none;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 18px 42px rgba(15, 23, 42, .18);
+      user-select: none;
+    }
+
+    .ctx-item {
+      min-height: 30px;
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      border-radius: 6px;
+      padding: 0 8px;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .ctx-item:hover {
+      color: var(--accent);
+      background: #ecfdf5;
+    }
+
+    .ctx-item.danger {
+      color: var(--danger);
+    }
+
+    .ctx-item.disabled {
+      color: #b7c2d0;
+      pointer-events: none;
+    }
+
+    .ctx-icon {
+      width: 15px;
+      height: 15px;
+      color: currentColor;
+      opacity: .72;
+    }
+
+    .ctx-shortcut {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .ctx-sep {
+      height: 1px;
+      margin: 5px 4px;
+      background: var(--line);
+    }
+
+    @media (max-width: 880px) {
+      .topbar,
+      .tool-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .formula-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .sheet-frame {
+        height: calc(100vh - 275px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">SpanGrid Spreadsheet <span id="version">v0.1.1</span></div>
+      <div class="top-meta">Excel-style sheet simulation with A..ZZ columns, fixed headers, and a right-click command menu.</div>
+      <nav class="top-actions" aria-label="Example links">
+        <a href="index.html">Grid Editor</a>
+        <a href="query-analyzer.html">Query Analyzer</a>
+        <a href="meta-management.html">Meta Management</a>
+        <a href="showcase.html">Showcase</a>
+      </nav>
+    </header>
+
+    <section class="formula-bar" aria-label="Formula bar">
+      <output id="nameBox" class="name-box">A1</output>
+      <input id="formulaInput" class="formula-input" type="text" autocomplete="off" spellcheck="false" aria-label="Cell value">
+      <button id="applyFormula" class="primary" type="button">Apply</button>
+    </section>
+
+    <section class="tool-row" aria-label="Spreadsheet commands">
+      <button id="copyBtn" type="button">Copy</button>
+      <button id="pasteBtn" type="button">Paste</button>
+      <button id="clearBtn" type="button">Clear</button>
+      <button id="fillDownBtn" type="button">Fill Down</button>
+      <button id="fillRightBtn" type="button">Fill Right</button>
+      <button id="sortAscBtn" type="button">Sort A to Z</button>
+      <button id="sortDescBtn" type="button">Sort Z to A</button>
+      <button id="autoFitBtn" type="button">Auto Fit</button>
+      <span class="spacer"></span>
+      <button id="expandToZzBtn" type="button">Expand to ZZ</button>
+      <button id="resetBtn" class="danger" type="button">Reset Sheet</button>
+    </section>
+
+    <main class="sheet-stage">
+      <div class="sheet-frame">
+        <canvas id="gridCanvas" width="1280" height="720" tabindex="0"></canvas>
+        <input id="vScroll" class="scroll-y" type="range" min="0" max="0" value="0" aria-label="Vertical scroll">
+        <input id="hScroll" class="scroll-x" type="range" min="0" max="0" value="0" aria-label="Horizontal scroll">
+        <div class="corner"></div>
+      </div>
+    </main>
+
+    <footer class="statusbar">
+      <span id="status">Ready</span>
+      <span><strong id="shape">100 rows x 52 columns</strong> supported through ZZ</span>
+    </footer>
+  </div>
+
+  <div id="sheetContextMenu" class="context-menu" role="menu"></div>
+
+  <script src="../../packages/spangrid/src/span-grid.js"></script>
+  <script>
+    const {
+      VERSION,
+      BorderDirection,
+      SpanGridBorder,
+      SpanGridCanvasView,
+      SpanGridCol,
+      SpanGridControl,
+      SpanGridFixed,
+      SpanGridRow,
+    } = window.SpanGrid;
+
+    const DEFAULT_ROW_COUNT = 100;
+    const DEFAULT_COLUMN_COUNT = 52;
+    const MAX_COLUMN_COUNT = 702;
+    const MAX_COLUMN_NAME = "ZZ";
+    const ROW_HEADER_WIDTH = 50;
+    const DATA_COL_WIDTH = 96;
+    const HEADER_HEIGHT = 28;
+    const ROW_HEIGHT = 24;
+
+    const COLORS = {
+      header: "#eef3f8",
+      headerActive: "#dbeafe",
+      headerText: "#344054",
+      rowHeader: "#f2f5f9",
+      cell: "#ffffff",
+      cellAlt: "#fcfdff",
+      text: "#17202f",
+      muted: "#667085",
+      number: "#0f766e",
+      formula: "#1d4ed8",
+      border: "#d8dee8",
+      accent: "#0f766e",
+    };
+
+    const SHEET_CONTEXT_MENU_DEF = [
+      { id: "copy", label: "Copy", shortcut: "Ctrl+C", icon: "copy" },
+      { id: "paste", label: "Paste", shortcut: "Ctrl+V", icon: "paste" },
+      { id: "clear", label: "Clear contents", shortcut: "Del", icon: "clear", danger: true },
+      { sep: true },
+      { id: "fillDown", label: "Fill down", shortcut: "Ctrl+D", icon: "down" },
+      { id: "fillRight", label: "Fill right", shortcut: "Ctrl+R", icon: "right" },
+      { sep: true },
+      { id: "insertRowAbove", label: "Insert row above", icon: "row-plus" },
+      { id: "insertRowBelow", label: "Insert row below", icon: "row-plus" },
+      { id: "insertColumnLeft", label: "Insert column left", icon: "col-plus" },
+      { id: "insertColumnRight", label: "Insert column right", icon: "col-plus" },
+      { id: "deleteRow", label: "Delete row", icon: "row-minus", danger: true },
+      { id: "deleteColumn", label: "Delete column", icon: "col-minus", danger: true },
+      { sep: true },
+      { id: "sortAsc", label: "Sort selected column A to Z", icon: "sort-asc" },
+      { id: "sortDesc", label: "Sort selected column Z to A", icon: "sort-desc" },
+      { id: "autoFit", label: "Auto fit columns", icon: "fit" },
+    ];
+
+    const ICONS = {
+      copy: '<rect x="8" y="8" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/>',
+      paste: '<path d="M8 4h8v3H8z"/><path d="M6 7h12v13H6z"/><path d="M9 12h6M9 16h4"/>',
+      clear: '<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 14h10l1-14"/><path d="M9 7V4h6v3"/>',
+      down: '<path d="M12 4v14"/><path d="M7 13l5 5 5-5"/><path d="M5 20h14"/>',
+      right: '<path d="M4 12h14"/><path d="M13 7l5 5-5 5"/><path d="M20 5v14"/>',
+      "row-plus": '<rect x="4" y="7" width="16" height="10" rx="2"/><path d="M4 12h16M12 2v4M10 4h4"/>',
+      "row-minus": '<rect x="4" y="6" width="16" height="12" rx="2"/><path d="M4 12h16M8 12h8"/>',
+      "col-plus": '<rect x="7" y="4" width="10" height="16" rx="2"/><path d="M12 4v16M18 12h4M20 10v4"/>',
+      "col-minus": '<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M12 4v16M8 12h8"/>',
+      "sort-asc": '<path d="M7 17V5M4 8l3-3 3 3"/><path d="M13 7h7M13 12h5M13 17h3"/>',
+      "sort-desc": '<path d="M7 7v12M4 16l3 3 3-3"/><path d="M13 7h3M13 12h5M13 17h7"/>',
+      fit: '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M9 5v14M15 5v14M4 10h16M4 14h16"/>',
+    };
+
+    const dom = {
+      version: document.getElementById("version"),
+      nameBox: document.getElementById("nameBox"),
+      formulaInput: document.getElementById("formulaInput"),
+      applyFormula: document.getElementById("applyFormula"),
+      gridCanvas: document.getElementById("gridCanvas"),
+      hScroll: document.getElementById("hScroll"),
+      vScroll: document.getElementById("vScroll"),
+      contextMenu: document.getElementById("sheetContextMenu"),
+      status: document.getElementById("status"),
+      shape: document.getElementById("shape"),
+      copyBtn: document.getElementById("copyBtn"),
+      pasteBtn: document.getElementById("pasteBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      fillDownBtn: document.getElementById("fillDownBtn"),
+      fillRightBtn: document.getElementById("fillRightBtn"),
+      sortAscBtn: document.getElementById("sortAscBtn"),
+      sortDescBtn: document.getElementById("sortDescBtn"),
+      autoFitBtn: document.getElementById("autoFitBtn"),
+      expandToZzBtn: document.getElementById("expandToZzBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+    };
+
+    const state = {
+      rowCount: DEFAULT_ROW_COUNT,
+      colCount: DEFAULT_COLUMN_COUNT,
+      cells: new Map(),
+      grid: null,
+      view: null,
+      suppressSelectionUpdate: false,
+    };
+
+    dom.version.textContent = `v${VERSION}`;
+
+    function columnNameFromIndex(index) {
+      let value = index + 1;
+      let label = "";
+      while (value > 0) {
+        value -= 1;
+        label = String.fromCharCode(65 + (value % 26)) + label;
+        value = Math.floor(value / 26);
+      }
+      return label;
+    }
+
+    function cellAddress(rowIndex, colIndex) {
+      return `${columnNameFromIndex(colIndex)}${rowIndex + 1}`;
+    }
+
+    function cellKey(rowIndex, colIndex) {
+      return `${rowIndex}:${colIndex}`;
+    }
+
+    function setCellValue(rowIndex, colIndex, value) {
+      const key = cellKey(rowIndex, colIndex);
+      const text = String(value ?? "");
+      if (text) state.cells.set(key, text);
+      else state.cells.delete(key);
+    }
+
+    function getCellValue(rowIndex, colIndex) {
+      return state.cells.get(cellKey(rowIndex, colIndex)) || "";
+    }
+
+    function seedSheet() {
+      state.cells = new Map();
+      [
+        [0, 0, "Region"],
+        [0, 1, "Sales"],
+        [0, 2, "Cost"],
+        [0, 3, "Margin"],
+        [0, 4, "Owner"],
+        [1, 0, "North"],
+        [1, 1, "12840"],
+        [1, 2, "8420"],
+        [1, 3, "=B2-C2"],
+        [1, 4, "Avery"],
+        [2, 0, "South"],
+        [2, 1, "10420"],
+        [2, 2, "6930"],
+        [2, 3, "=B3-C3"],
+        [2, 4, "Mina"],
+        [3, 0, "West"],
+        [3, 1, "18920"],
+        [3, 2, "11100"],
+        [3, 3, "=B4-C4"],
+        [3, 4, "Noah"],
+        [4, 0, "East"],
+        [4, 1, "15110"],
+        [4, 2, "9875"],
+        [4, 3, "=B5-C5"],
+        [4, 4, "Iris"],
+        [6, 0, "Notes"],
+        [6, 1, "Drag across cells to select a range."],
+        [7, 1, "Right-click the sheet for commands."],
+        [8, 1, `Columns are addressed through ${MAX_COLUMN_NAME}.`],
+      ].forEach(([row, col, value]) => setCellValue(row, col, value));
+    }
+
+    function makeBorder(direction, color = COLORS.border, width = 1) {
+      return new SpanGridBorder({ borderDirection: direction, color, lineWidth: width });
+    }
+
+    function setupGrid() {
+      const frame = dom.gridCanvas.parentElement;
+      const grid = new SpanGridControl({
+        width: Math.max(620, frame.clientWidth - 18),
+        height: Math.max(360, frame.clientHeight - 28),
+        backColor: COLORS.cell,
+        borderStyle: "None",
+        focusColor: COLORS.accent,
+        lineColor: COLORS.border,
+        lineWidth: 1,
+      });
+      const view = new SpanGridCanvasView(dom.gridCanvas, grid, {
+        hScroll: dom.hScroll,
+        vScroll: dom.vScroll,
+        statusElement: dom.status,
+        pasteOverflow: "truncate",
+      });
+
+      grid.onSelectionChange(updateSelectionUi);
+      grid.onCellClick(({ cell }) => {
+        if (!cell || !cell.tag) return;
+        if (cell.tag.type === "column-header") {
+          sortSelectedColumn(true, cell.tag.colIndex);
+        } else if (cell.tag.type === "row-header") {
+          selectSheetRow(cell.tag.rowIndex);
+        }
+      });
+
+      dom.gridCanvas.addEventListener("contextmenu", () => dom.gridCanvas.focus());
+      dom.gridCanvas.addEventListener("keydown", (event) => {
+        if (event.key === "Delete" || event.key === "Backspace") {
+          clearContents();
+          event.preventDefault();
+          return;
+        }
+        if (!(event.ctrlKey || event.metaKey)) return;
+        const key = event.key.toLowerCase();
+        if (key === "d") {
+          fillDown();
+          event.preventDefault();
+        } else if (key === "r") {
+          fillRight();
+          event.preventDefault();
+        }
+      });
+
+      const resizeObserver = new ResizeObserver(() => {
+        grid.width = Math.max(620, frame.clientWidth - 18);
+        grid.height = Math.max(360, frame.clientHeight - 28);
+        grid.layout();
+        view.resize();
+        view.draw();
+      });
+      resizeObserver.observe(frame);
+
+      state.grid = grid;
+      state.view = view;
+    }
+
+    function renderSheet() {
+      const grid = state.grid;
+      if (!grid) return;
+      state.suppressSelectionUpdate = true;
+      grid.rows = [];
+      grid.cols = [];
+      grid.merges = [];
+      grid.selectedObjects = [];
+      grid.fixed = new SpanGridFixed();
+
+      grid.addCol(new SpanGridCol({ width: ROW_HEADER_WIDTH }));
+      for (let col = 0; col < state.colCount; col += 1) {
+        grid.addCol(new SpanGridCol({ width: DATA_COL_WIDTH }));
+      }
+
+      grid.addRow(new SpanGridRow({ height: HEADER_HEIGHT }));
+      const corner = grid.getCell(0, 0);
+      corner.text = "";
+      corner.backColor = COLORS.header;
+      corner.foreColor = COLORS.headerText;
+      corner.tag = { type: "corner-header", editable: false };
+
+      for (let col = 0; col < state.colCount; col += 1) {
+        const cell = grid.getCell(0, col + 1);
+        cell.text = columnNameFromIndex(col);
+        cell.backColor = COLORS.header;
+        cell.foreColor = COLORS.headerText;
+        cell.font = "bold 12px system-ui, sans-serif";
+        cell.textAlign = "MiddleCenter";
+        cell.border = makeBorder(BorderDirection.Bottom, "#b7c2d0", 2);
+        cell.tag = { type: "column-header", editable: false, colIndex: col };
+      }
+
+      for (let row = 0; row < state.rowCount; row += 1) {
+        grid.addRow(new SpanGridRow({ height: ROW_HEIGHT }));
+        const gridRow = row + 1;
+        const rowHeader = grid.getCell(gridRow, 0);
+        rowHeader.text = String(row + 1);
+        rowHeader.backColor = COLORS.rowHeader;
+        rowHeader.foreColor = COLORS.headerText;
+        rowHeader.font = "12px ui-monospace, SFMono-Regular, Consolas, monospace";
+        rowHeader.textAlign = "MiddleRight";
+        rowHeader.border = makeBorder(BorderDirection.Right, "#b7c2d0", 2);
+        rowHeader.tag = { type: "row-header", editable: false, rowIndex: row };
+
+        for (let col = 0; col < state.colCount; col += 1) {
+          const value = getCellValue(row, col);
+          const cell = grid.getCell(gridRow, col + 1);
+          cell.text = value;
+          cell.backColor = row % 2 === 0 ? COLORS.cell : COLORS.cellAlt;
+          cell.foreColor = value.startsWith("=") ? COLORS.formula : isNumeric(value) ? COLORS.accent : COLORS.text;
+          cell.font = "12px ui-monospace, SFMono-Regular, Consolas, monospace";
+          cell.textAlign = isNumeric(value) ? "MiddleRight" : "MiddleLeft";
+          cell.tag = { type: "data", editable: true, rowIndex: row, colIndex: col, address: cellAddress(row, col) };
+        }
+      }
+
+      grid.fixed = new SpanGridFixed(grid.rows[0], grid.cols[0]);
+      grid.layout();
+      state.view.resize();
+      state.view.draw();
+      state.suppressSelectionUpdate = false;
+      grid.selectCell(1, 1);
+      updateShape();
+    }
+
+    function isNumeric(value) {
+      return String(value).trim() !== "" && !Number.isNaN(Number(value));
+    }
+
+    function dataCellsFromSelection() {
+      const grid = state.grid;
+      if (!grid) return [];
+      const cells = grid.selectedCells && grid.selectedCells.length ? grid.selectedCells : (grid.selectedCell ? [grid.selectedCell] : []);
+      return cells.filter((cell) => cell && cell.tag && cell.tag.type === "data");
+    }
+
+    function primaryDataCell() {
+      return dataCellsFromSelection()[0] || null;
+    }
+
+    function updateSelectionUi() {
+      if (state.suppressSelectionUpdate) return;
+      const cells = dataCellsFromSelection();
+      if (cells.length === 0) {
+        dom.nameBox.textContent = "";
+        dom.formulaInput.value = "";
+        return;
+      }
+      const first = cells[0];
+      if (cells.length === 1) {
+        dom.nameBox.textContent = first.tag.address;
+        dom.formulaInput.value = first.text;
+        dom.status.textContent = `Selected ${first.tag.address}`;
+        return;
+      }
+      const rows = cells.map((cell) => cell.tag.rowIndex);
+      const cols = cells.map((cell) => cell.tag.colIndex);
+      const minRow = Math.min(...rows);
+      const maxRow = Math.max(...rows);
+      const minCol = Math.min(...cols);
+      const maxCol = Math.max(...cols);
+      dom.nameBox.textContent = `${cellAddress(minRow, minCol)}:${cellAddress(maxRow, maxCol)}`;
+      dom.formulaInput.value = first.text;
+      dom.status.textContent = `${cells.length} cells selected`;
+    }
+
+    function updateShape() {
+      dom.shape.textContent = `${state.rowCount} rows x ${state.colCount} columns, max ${MAX_COLUMN_NAME}`;
+    }
+
+    function syncSheetFromGrid() {
+      const grid = state.grid;
+      for (let row = 0; row < state.rowCount; row += 1) {
+        for (let col = 0; col < state.colCount; col += 1) {
+          const cell = grid.getCell(row + 1, col + 1);
+          setCellValue(row, col, cell ? cell.text : "");
+        }
+      }
+    }
+
+    function applyFormulaValue() {
+      const cell = primaryDataCell();
+      if (!cell) return;
+      const value = dom.formulaInput.value;
+      cell.text = value;
+      cell.foreColor = value.startsWith("=") ? COLORS.formula : isNumeric(value) ? COLORS.accent : COLORS.text;
+      setCellValue(cell.tag.rowIndex, cell.tag.colIndex, value);
+      state.view.draw();
+      updateSelectionUi();
+    }
+
+    async function writeClipboard(text) {
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        dom.status.textContent = "Copied to clipboard";
+      } catch (error) {
+        dom.status.textContent = "Clipboard is unavailable in this browser context";
+      }
+    }
+
+    async function readClipboard() {
+      try {
+        return await navigator.clipboard.readText();
+      } catch (error) {
+        dom.status.textContent = "Clipboard is unavailable in this browser context";
+        return "";
+      }
+    }
+
+    function copySelection() {
+      writeClipboard(state.grid.copySelectionToTsv());
+    }
+
+    async function pasteFromClipboard() {
+      const text = await readClipboard();
+      if (!text) return;
+      state.grid.pasteTsv(text, { overflow: "truncate" });
+      syncSheetFromGrid();
+      state.view.draw();
+      updateSelectionUi();
+    }
+
+    function clearContents() {
+      const cells = dataCellsFromSelection();
+      cells.forEach((cell) => {
+        cell.text = "";
+        setCellValue(cell.tag.rowIndex, cell.tag.colIndex, "");
+      });
+      state.view.draw();
+      updateSelectionUi();
+    }
+
+    function fillDown() {
+      const cell = primaryDataCell();
+      if (!cell) return;
+      const value = cell.text;
+      for (let row = cell.tag.rowIndex + 1; row < state.rowCount; row += 1) {
+        const target = state.grid.getCell(row + 1, cell.tag.colIndex + 1);
+        if (!target) continue;
+        target.text = value;
+        setCellValue(row, cell.tag.colIndex, value);
+      }
+      state.view.draw();
+    }
+
+    function fillRight() {
+      const cell = primaryDataCell();
+      if (!cell) return;
+      const value = cell.text;
+      for (let col = cell.tag.colIndex + 1; col < state.colCount; col += 1) {
+        const target = state.grid.getCell(cell.tag.rowIndex + 1, col + 1);
+        if (!target) continue;
+        target.text = value;
+        setCellValue(cell.tag.rowIndex, col, value);
+      }
+      state.view.draw();
+    }
+
+    function shiftRows(startRow, delta) {
+      const next = new Map();
+      for (const [key, value] of state.cells.entries()) {
+        const [rowText, colText] = key.split(":");
+        const row = Number(rowText);
+        const col = Number(colText);
+        const nextRow = row >= startRow ? row + delta : row;
+        if (nextRow >= 0 && nextRow < state.rowCount) next.set(cellKey(nextRow, col), value);
+      }
+      state.cells = next;
+    }
+
+    function shiftColumns(startCol, delta) {
+      const next = new Map();
+      for (const [key, value] of state.cells.entries()) {
+        const [rowText, colText] = key.split(":");
+        const row = Number(rowText);
+        const col = Number(colText);
+        const nextCol = col >= startCol ? col + delta : col;
+        if (nextCol >= 0 && nextCol < state.colCount) next.set(cellKey(row, nextCol), value);
+      }
+      state.cells = next;
+    }
+
+    function selectedRowIndex() {
+      const cell = primaryDataCell();
+      return cell ? cell.tag.rowIndex : 0;
+    }
+
+    function selectedColumnIndex() {
+      const cell = primaryDataCell();
+      return cell ? cell.tag.colIndex : 0;
+    }
+
+    function insertRowAbove() {
+      const index = selectedRowIndex();
+      state.rowCount += 1;
+      shiftRows(index, 1);
+      renderSheet();
+      selectCellAddress(index, 0);
+    }
+
+    function insertRowBelow() {
+      const index = selectedRowIndex() + 1;
+      state.rowCount += 1;
+      shiftRows(index, 1);
+      renderSheet();
+      selectCellAddress(index, 0);
+    }
+
+    function deleteRow() {
+      if (state.rowCount <= 1) return;
+      const index = selectedRowIndex();
+      shiftRows(index + 1, -1);
+      state.rowCount -= 1;
+      renderSheet();
+      selectCellAddress(Math.min(index, state.rowCount - 1), 0);
+    }
+
+    function insertColumnLeft() {
+      if (state.colCount >= MAX_COLUMN_COUNT) {
+        dom.status.textContent = `Column limit reached at ${MAX_COLUMN_NAME}`;
+        return;
+      }
+      const index = selectedColumnIndex();
+      state.colCount += 1;
+      shiftColumns(index, 1);
+      renderSheet();
+      selectCellAddress(0, index);
+    }
+
+    function insertColumnRight() {
+      if (state.colCount >= MAX_COLUMN_COUNT) {
+        dom.status.textContent = `Column limit reached at ${MAX_COLUMN_NAME}`;
+        return;
+      }
+      const index = selectedColumnIndex() + 1;
+      state.colCount += 1;
+      shiftColumns(index, 1);
+      renderSheet();
+      selectCellAddress(0, index);
+    }
+
+    function deleteColumn() {
+      if (state.colCount <= 1) return;
+      const index = selectedColumnIndex();
+      shiftColumns(index + 1, -1);
+      state.colCount -= 1;
+      renderSheet();
+      selectCellAddress(0, Math.min(index, state.colCount - 1));
+    }
+
+    function sortSelectedColumn(asc = true, colIndex = selectedColumnIndex()) {
+      syncSheetFromGrid();
+      const rows = [];
+      for (let row = 0; row < state.rowCount; row += 1) {
+        const values = [];
+        for (let col = 0; col < state.colCount; col += 1) values.push(getCellValue(row, col));
+        rows.push(values);
+      }
+      rows.sort((left, right) => compareSheetValues(left[colIndex], right[colIndex], asc));
+      state.cells = new Map();
+      rows.forEach((values, row) => {
+        values.forEach((value, col) => setCellValue(row, col, value));
+      });
+      renderSheet();
+      selectCellAddress(0, colIndex);
+      dom.status.textContent = `Sorted ${columnNameFromIndex(colIndex)} ${asc ? "A to Z" : "Z to A"}`;
+    }
+
+    function compareSheetValues(a, b, asc) {
+      if (!a && !b) return 0;
+      if (!a) return asc ? 1 : -1;
+      if (!b) return asc ? -1 : 1;
+      const na = Number(a);
+      const nb = Number(b);
+      const numeric = !Number.isNaN(na) && !Number.isNaN(nb);
+      const result = numeric ? na - nb : String(a).localeCompare(String(b));
+      return asc ? result : -result;
+    }
+
+    function autoFitColumns() {
+      try {
+        state.grid.autoFitCols({ padding: 18, minWidth: 64, maxWidth: 220, fill: false, fixedCols: { 0: ROW_HEADER_WIDTH } });
+      } catch (error) {
+        state.grid.layout();
+      }
+      state.view.resize();
+      state.view.draw();
+    }
+
+    function selectSheetRow(rowIndex) {
+      const cells = [];
+      for (let col = 0; col < state.colCount; col += 1) {
+        cells.push(state.grid.getCell(rowIndex + 1, col + 1));
+      }
+      state.grid.selectCells(cells);
+      state.view.draw();
+    }
+
+    function selectCellAddress(rowIndex, colIndex) {
+      const cell = state.grid.getCell(rowIndex + 1, colIndex + 1);
+      if (!cell) return;
+      state.grid.selectCell(cell);
+      state.grid.ensureVisible(cell);
+      state.view.draw();
+    }
+
+    function expandToZz() {
+      if (state.colCount === MAX_COLUMN_COUNT) return;
+      state.colCount = MAX_COLUMN_COUNT;
+      renderSheet();
+      selectCellAddress(0, MAX_COLUMN_COUNT - 1);
+      dom.status.textContent = `Expanded through ${MAX_COLUMN_NAME}`;
+    }
+
+    function resetSheet() {
+      state.rowCount = DEFAULT_ROW_COUNT;
+      state.colCount = DEFAULT_COLUMN_COUNT;
+      seedSheet();
+      renderSheet();
+      dom.status.textContent = "Sheet reset";
+    }
+
+    function makeIcon(name) {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("stroke-width", "1.8");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+      svg.setAttribute("class", "ctx-icon");
+      svg.innerHTML = ICONS[name] || "";
+      return svg;
+    }
+
+    function buildContextMenu() {
+      dom.contextMenu.replaceChildren();
+      SHEET_CONTEXT_MENU_DEF.forEach((item) => {
+        if (item.sep) {
+          const sep = document.createElement("div");
+          sep.className = "ctx-sep";
+          dom.contextMenu.appendChild(sep);
+          return;
+        }
+        const el = document.createElement("div");
+        el.className = `ctx-item${item.danger ? " danger" : ""}`;
+        el.dataset.command = item.id;
+        el.setAttribute("role", "menuitem");
+        el.appendChild(makeIcon(item.icon));
+        const label = document.createElement("span");
+        label.textContent = item.label;
+        el.appendChild(label);
+        const shortcut = document.createElement("span");
+        shortcut.className = "ctx-shortcut";
+        shortcut.textContent = item.shortcut || "";
+        el.appendChild(shortcut);
+        dom.contextMenu.appendChild(el);
+      });
+    }
+
+    function hideContextMenu() {
+      dom.contextMenu.style.display = "none";
+      document.removeEventListener("mousedown", onDocumentMouseDown, true);
+      document.removeEventListener("keydown", onDocumentKeyDown, true);
+      document.removeEventListener("scroll", hideContextMenu, true);
+    }
+
+    function onDocumentMouseDown(event) {
+      if (!dom.contextMenu.contains(event.target)) hideContextMenu();
+    }
+
+    function onDocumentKeyDown(event) {
+      if (event.key === "Escape") hideContextMenu();
+    }
+
+    function showSpreadsheetContextMenu(x, y) {
+      const hasDataCell = dataCellsFromSelection().length > 0;
+      dom.contextMenu.querySelectorAll(".ctx-item").forEach((item) => {
+        item.classList.toggle("disabled", !hasDataCell && item.dataset.command !== "autoFit");
+      });
+      dom.contextMenu.style.left = "0px";
+      dom.contextMenu.style.top = "0px";
+      dom.contextMenu.style.display = "block";
+      const menuWidth = dom.contextMenu.offsetWidth;
+      const menuHeight = dom.contextMenu.offsetHeight;
+      dom.contextMenu.style.left = `${Math.min(x, window.innerWidth - menuWidth - 4)}px`;
+      dom.contextMenu.style.top = `${Math.min(y, window.innerHeight - menuHeight - 4)}px`;
+      setTimeout(() => {
+        document.addEventListener("mousedown", onDocumentMouseDown, true);
+        document.addEventListener("keydown", onDocumentKeyDown, true);
+        document.addEventListener("scroll", hideContextMenu, true);
+      }, 0);
+    }
+
+    window.showSgContextMenu = showSpreadsheetContextMenu;
+
+    const COMMANDS = {
+      copy: copySelection,
+      paste: pasteFromClipboard,
+      clear: clearContents,
+      fillDown,
+      fillRight,
+      insertRowAbove,
+      insertRowBelow,
+      insertColumnLeft,
+      insertColumnRight,
+      deleteRow,
+      deleteColumn,
+      sortAsc: () => sortSelectedColumn(true),
+      sortDesc: () => sortSelectedColumn(false),
+      autoFit: autoFitColumns,
+    };
+
+    dom.contextMenu.addEventListener("click", (event) => {
+      const item = event.target.closest(".ctx-item");
+      if (!item || item.classList.contains("disabled")) return;
+      hideContextMenu();
+      const command = COMMANDS[item.dataset.command];
+      if (command) command();
+    });
+
+    dom.applyFormula.addEventListener("click", applyFormulaValue);
+    dom.formulaInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        applyFormulaValue();
+      }
+    });
+    dom.copyBtn.addEventListener("click", copySelection);
+    dom.pasteBtn.addEventListener("click", pasteFromClipboard);
+    dom.clearBtn.addEventListener("click", clearContents);
+    dom.fillDownBtn.addEventListener("click", fillDown);
+    dom.fillRightBtn.addEventListener("click", fillRight);
+    dom.sortAscBtn.addEventListener("click", () => sortSelectedColumn(true));
+    dom.sortDescBtn.addEventListener("click", () => sortSelectedColumn(false));
+    dom.autoFitBtn.addEventListener("click", autoFitColumns);
+    dom.expandToZzBtn.addEventListener("click", expandToZz);
+    dom.resetBtn.addEventListener("click", resetSheet);
+
+    setupGrid();
+    buildContextMenu();
+    seedSheet();
+    renderSheet();
+  </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 {
   "name": "@pomelo-suite/spangrid",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Canvas span grid control for Pomelo Suite.",
   "license": "MIT",
   "author": "xamongmini",
@@ -27,7 +27,6 @@
   },
   "files": [
     "src",
-    "docs",
     "README.md",
     "LICENSE"
   ],
@@ -40,6 +39,9 @@
     "canvas",
     "data-grid"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "pomeloSuite": {
     "stability": "stable"
   }

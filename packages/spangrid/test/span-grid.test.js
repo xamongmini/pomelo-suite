@@ -696,11 +696,11 @@ test("version and persistence APIs round-trip grid state", () => {
   assert.strictEqual(SpanGridControl.fromJSON({ width: 60, height: 40, rows: [], cols: [] }).reserveScrollbarInViewport, false);
 });
 
-test("published docs and demos use the package version", () => {
+test("repository docs and demos use the package version", () => {
   const pkg = JSON.parse(fs.readFileSync(require.resolve("../package.json"), "utf8"));
   const readme = readPackageFile("README.md");
-  const api = readPackageFile("docs/API.md");
-  const usage = readPackageFile("docs/USAGE.md");
+  const api = readRepoFile("docs/spangrid/API.md");
+  const usage = readRepoFile("docs/spangrid/USAGE.md");
   const index = readRepoFile("examples/spangrid/index.html");
   const showcase = readRepoFile("examples/spangrid/showcase.html");
 
@@ -1125,6 +1125,19 @@ test("html sanitizer removes whitespace-obfuscated protocols and unsafe css", ()
   assert.ok(svg.includes("<span>ok</span>"));
 });
 
+test("html sanitizer removes entity-obfuscated unsafe urls", () => {
+  const view = new SpanGridCanvasView(null, new SpanGridControl());
+
+  const encodedAlpha = view.sanitizeCellHtml('<a href="jav&#x61;script:alert(1)">x</a>');
+  const encodedLeading = view.sanitizeCellHtml('<a href="&#106;avascript:alert(1)">x</a>');
+  const encodedColon = view.sanitizeCellHtml('<a href="javascript&#x3a;alert(1)">x</a>');
+
+  assert.strictEqual(encodedAlpha.includes("href"), false);
+  assert.strictEqual(encodedLeading.includes("href"), false);
+  assert.strictEqual(encodedColon.includes("href"), false);
+  assert.doesNotThrow(() => view.sanitizeCellHtml('<a href="&#999999999999999999999999;">x</a>'));
+});
+
 test("html overlay renders visible html cells only", () => {
   const previousWindow = global.window;
   const previousDocument = global.document;
@@ -1216,10 +1229,67 @@ test("repository browser examples load the workspace source path", () => {
   }
 });
 
-test("published docs describe package paths and npm entrypoints", () => {
+test("divider hit testing uses row and column geometry instead of merged cell bounds", () => {
+  const grid = new SpanGridControl({ width: 220, height: 140 });
+  for (let index = 0; index < 3; index += 1) grid.addCol(new SpanGridCol({ width: 50 }));
+  for (let index = 0; index < 3; index += 1) grid.addRow(new SpanGridRow({ height: 26 }));
+  grid.mergeCells(0, 0, 1, 0);
+  grid.mergeCells(0, 1, 0, 2);
+
+  const view = new SpanGridCanvasView(null, grid);
+  const firstRowBottom = grid.getCell(0, 1).bounds.y + grid.rows[0].height;
+  const firstColRight = grid.getCell(1, 0).bounds.x + grid.cols[0].width;
+
+  assert.strictEqual(view.rowDividerAt({ x: 10, y: firstRowBottom }, 4).index, 0);
+  assert.strictEqual(view.colDividerAt({ x: firstColRight, y: 10 }, 4).index, 0);
+});
+
+test("mergeCells rejects overlapping merges and fromJSON skips invalid overlaps", () => {
+  const grid = new SpanGridControl({ width: 240, height: 160 });
+  for (let index = 0; index < 3; index += 1) grid.addCol(new SpanGridCol({ width: 50 }));
+  for (let index = 0; index < 3; index += 1) grid.addRow(new SpanGridRow({ height: 26 }));
+
+  grid.mergeCells(0, 0, 1, 1);
+  assert.throws(() => grid.mergeCells(1, 1, 2, 2), /overlap/i);
+  assert.strictEqual(grid.merges.length, 1);
+
+  const restored = SpanGridControl.fromJSON({
+    cols: [{ width: 50 }, { width: 50 }, { width: 50 }],
+    rows: [{ height: 26 }, { height: 26 }, { height: 26 }],
+    merges: [
+      { start: { row: 0, col: 0 }, end: { row: 1, col: 1 } },
+      { start: { row: 1, col: 1 }, end: { row: 2, col: 2 } },
+    ],
+  });
+  assert.strictEqual(restored.merges.length, 1);
+});
+
+test("vector export helpers return SVG strings and are documented", () => {
+  const grid = new SpanGridControl({ width: 160, height: 100 });
+  grid.addCol(new SpanGridCol({ width: 70 }));
+  grid.addRow(new SpanGridRow({ height: 30 }));
+  grid.getCell(0, 0).text = "<Export & Check>";
+  grid.selectCell(0, 0);
+
+  const svg = grid.toSVG();
+  const vector = grid.toVector();
+
+  assert.ok(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"'));
+  assert.ok(svg.includes("&lt;Export &amp; Check&gt;"));
+  assert.ok(vector.startsWith('<svg xmlns="http://www.w3.org/2000/svg"'));
+  assert.ok(vector.includes("&lt;Export &amp; Check&gt;"));
+  assert.strictEqual(grid.selectedCell, grid.getCell(0, 0));
+
+  const api = readRepoFile("docs/spangrid/API.md");
+  assert.ok(api.includes("toImage()"));
+  assert.ok(api.includes("toSVG()"));
+  assert.ok(api.includes("toVector()"));
+});
+
+test("repository docs describe package paths and npm entrypoints", () => {
   const readme = readPackageFile("README.md");
-  const api = readPackageFile("docs/API.md");
-  const usage = readPackageFile("docs/USAGE.md");
+  const api = readRepoFile("docs/spangrid/API.md");
+  const usage = readRepoFile("docs/spangrid/USAGE.md");
 
   for (const doc of [readme, api, usage]) {
     assert.ok(!doc.includes('src="./span-grid.js"'));
@@ -1286,7 +1356,7 @@ test("package metadata exposes source through modern export map", () => {
   const pkg = JSON.parse(fs.readFileSync(require.resolve("../package.json"), "utf8"));
 
   assert.strictEqual(pkg.name, "@pomelo-suite/spangrid");
-  assert.strictEqual(pkg.version, "0.1.0");
+  assert.strictEqual(pkg.version, "0.1.1");
   assert.strictEqual(pkg.license, "MIT");
   assert.strictEqual(pkg.author, "xamongmini");
   assert.strictEqual(pkg.private, false);
@@ -1302,7 +1372,7 @@ test("package metadata exposes source through modern export map", () => {
   assert.strictEqual(pkg.homepage, "https://github.com/xamongmini/pomelo-suite/tree/main/packages/spangrid#readme");
   assert.strictEqual(pkg.main, "src/span-grid.js");
   assert.strictEqual(pkg.browser, "src/span-grid.js");
-  assert.deepStrictEqual(pkg.files, ["src", "docs", "README.md", "LICENSE"]);
+  assert.deepStrictEqual(pkg.files, ["src", "README.md", "LICENSE"]);
   assert.deepStrictEqual(pkg.exports["."], {
     browser: "./src/span-grid.js",
     require: "./src/span-grid.js",

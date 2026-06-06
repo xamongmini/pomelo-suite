@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pomelo Suite Playground</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Pomelo Suite</p>
+      <h1>Playground</h1>
+    </div>
+    <div class="status-pill" id="server-status">checking</div>
+  </header>
+
+  <main class="layout">
+    <nav class="sidebar" aria-label="Package playground">
+      <button class="nav-item active" data-target="input">Input</button>
+      <button class="nav-item" data-target="color-picker">Color Picker</button>
+      <button class="nav-item" data-target="spangrid">SpanGrid</button>
+      <button class="nav-item" data-target="timeline">Timeline</button>
+      <button class="nav-item" data-target="scheduler">Scheduler</button>
+      <button class="nav-item" data-target="workqueue">WorkQueue</button>
+      <button class="nav-item" data-target="node-runtime">Node Runtime</button>
+      <button class="nav-item" data-target="diagram">Diagram</button>
+      <button class="nav-item" data-target="catalog">Catalog</button>
+    </nav>
+
+    <section class="package-screen active" id="input">
+      <div class="package-head">
+        <div>
+          <p class="eyebrow">@pomelo-suite/input</p>
+          <h2>Canvas extended input control</h2>
+        </div>
+        <code>npm install @pomelo-suite/input</code>
+      </div>
+      <div class="studio-layout">
+        <div class="stage-panel">
+          <div id="input-host" class="input-host text-input-pro"></div>
+          <output id="input-output">value: 42</output>
+        </div>
+        <aside class="inspector-panel" aria-label="Input controls">
+          <h3>Properties</h3>
+          <label class="control-field"><span>Value</span><input id="input-value-control" type="number" value="42" step="1"></label>
+          <label class="control-field"><span>Min</span><input id="input-min-control" type="number" value="0"></label>
+          <label class="control-field"><span>Max</span><input id="input-max-control" type="number" value="100"></label>
+          <label class="control-field"><span>Step</span><input id="input-step-control" type="number" value="1" min="0.001" step="0.001"></label>
+          <label class="control-field"><span>Format</span><select id="input-format-control"><option value="0.0">0.0</option><option value="0.##">0.##</option><option value="0.000">0.000</option></select></label>
+          <label class="control-field"><span>Width</span><input id="input-width-control" type="range" min="160" max="520" value="340"></label>
+          <label class="control-field"><span>Height</span><input id="input-height-control" type="range" min="26" max="64" value="44"></label>
+          <label class="control-field"><span>Fill</span><input id="input-fill-control" type="color" value="#3c78c8"></label>
+          <label class="check-row"><input id="input-math-mode-control" type="checkbox"> Math mode</label>
+          <label class="check-row"><input id="input-wheeling-control" type="checkbox" checked> Mouse wheel</label>
+          <button id="input-reset" class="secondary-btn">Reset input</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="package-screen" id="color-picker">
+      <div class="package-head">
+        <div>
+          <p class="eyebrow">@pomelo-suite/color-picker</p>
+          <h2>Canvas HSV color picker</h2>
+        </div>
+        <code>npm install @pomelo-suite/color-picker</code>
+      </div>
+      <div class="studio-layout">
+        <div class="stage-panel">
+          <div class="bcp">
+            <div class="bcp-canvas-row">
+              <canvas id="color-canvas"></canvas>
+            </div>
+            <div class="bcp-tabs">
+              <button class="bcp-tab" data-mode="rgb">RGB</button>
+              <button class="bcp-tab active" data-mode="hsv">HSV</button>
+              <button class="bcp-tab" data-mode="hex">Hex</button>
+            </div>
+            <div class="bcp-inputs">
+              <div class="bcp-row bcp-hsv-row">
+                <span class="bcp-label">H:</span>
+                <div class="bcp-field" id="hField" data-channel="h" data-min="0" data-max="1" data-step="0.001">
+                  <div class="bcp-field-fill" id="hFill"></div>
+                  <span class="bcp-field-text" id="hText">0.000</span>
+                  <input class="bcp-field-input" id="hInput" type="text" aria-label="Hue">
+                </div>
+                <button class="bcp-eyedropper" id="eyedropperBtn" title="Eyedropper" aria-label="Eyedropper">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 22l6-6"/>
+                    <path d="M3.5 20.5L9 15l6-6 2.5-2.5"/>
+                    <path d="M14 3l7 7"/>
+                    <circle cx="18" cy="6" r="1.5" fill="currentColor" stroke="none"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="bcp-row bcp-hsv-row">
+                <span class="bcp-label">S:</span>
+                <div class="bcp-field" id="sField" data-channel="s" data-min="0" data-max="1" data-step="0.001">
+                  <div class="bcp-field-fill" id="sFill"></div>
+                  <span class="bcp-field-text" id="sText">0.000</span>
+                  <input class="bcp-field-input" id="sInput" type="text" aria-label="Saturation">
+                </div>
+              </div>
+              <div class="bcp-row bcp-hsv-row">
+                <span class="bcp-label">V:</span>
+                <div class="bcp-field" id="vField" data-channel="v" data-min="0" data-max="1" data-step="0.001">
+                  <div class="bcp-field-fill" id="vFill"></div>
+                  <span class="bcp-field-text" id="vText">0.460</span>
+                  <input class="bcp-field-input" id="vInput" type="text" aria-label="Value">
+                </div>
+              </div>
+              <div class="bcp-row bcp-rgb-row bcp-hidden">
+                <span class="bcp-label">R:</span>
+                <div class="bcp-field" id="rField" data-channel="r" data-min="0" data-max="255" data-step="1">
+                  <div class="bcp-field-fill channel-r" id="rFill"></div>
+                  <span class="bcp-field-text" id="rText">0</span>
+                  <input class="bcp-field-input" id="rInput" type="text" aria-label="Red">
+                </div>
+              </div>
+              <div class="bcp-row bcp-rgb-row bcp-hidden">
+                <span class="bcp-label">G:</span>
+                <div class="bcp-field" id="gField" data-channel="g" data-min="0" data-max="255" data-step="1">
+                  <div class="bcp-field-fill channel-g" id="gFill"></div>
+                  <span class="bcp-field-text" id="gText">0</span>
+                  <input class="bcp-field-input" id="gInput" type="text" aria-label="Green">
+                </div>
+              </div>
+              <div class="bcp-row bcp-rgb-row bcp-hidden">
+                <span class="bcp-label">B:</span>
+                <div class="bcp-field" id="bField" data-channel="b" data-min="0" data-max="255" data-step="1">
+                  <div class="bcp-field-fill channel-b" id="bFill"></div>
+                  <span class="bcp-field-text" id="bText">117</span>
+                  <input class="bcp-field-input" id="bInput" type="text" aria-label="Blue">
+                </div>
+              </div>
+              <div class="bcp-row bcp-hex-row bcp-hidden">
+                <span class="bcp-label">#</span>
+                <div class="bcp-field bcp-field-hex" id="hexField">
+                  <span class="bcp-field-text" id="hexText">000075</span>
+                  <input class="bcp-field-input" id="hexInput" type="text" maxlength="6" aria-label="Hex color">
+                </div>
+              </div>
+              <div class="bcp-row">
+                <span class="bcp-label">A:</span>
+                <div class="bcp-field" id="aField" data-channel="a" data-min="0" data-max="1" data-step="0.001">
+                  <div class="bcp-field-fill" id="aFill"></div>
+                  <span class="bcp-field-text" id="aText">1.000</span>
+                  <input class="bcp-field-input" id="aInput" type="text" aria-label="Alpha">
+                </div>
+              </div>
+            </div>
+            <div class="bcp-preview" id="colorPreview"></div>
+          </div>
+        </div>
+        <aside class="inspector-panel" aria-label="Color picker controls">
+          <h3>Presets</h3>
+          <div id="color-preset-list" class="swatch-list"></div>
+          <label class="control-field"><span>Alpha</span><input id="color-alpha-control" type="range" min="0" max="1" step="0.01" value="1"></label>
+          <label class="control-field"><span>Hex</span><input id="color-hex-control" type="text" value="000075" maxlength="6"></label>
+          <button id="color-apply-hex" class="secondary-btn">Apply Hex</button>
+          <pre id="color-output" class="compact-output">ready</pre>
+        </aside>
+      </div>
+    </section>
+
+    <section class="package-screen" id="spangrid">
+      <div class="package-head">
+        <div>
+          <p class="eyebrow">@pomelo-suite/spangrid</p>
+          <h2>Span based canvas grid</h2>
+        </div>
+        <code>npm install @pomelo-suite/spangrid</code>
+      </div>
+      <div class="studio-layout">
+        <div class="stage-panel">
+          <div id="spangrid-status" class="status-line">Ready</div>
+          <div class="spangrid-stage">
+            <canvas id="grid-canvas" width="1100" height="620"></canvas>
+            <input id="spangrid-v-scroll" class="scroll-y" type="range" min="0" max="0" value="0" aria-label="Vertical scroll">
+            <input id="spangrid-h-scroll" class="scroll-x" type="range" min="0" max="0" value="0" aria-label="Horizontal scroll">
+            <div class="corner"></div>
+          </div>
+        </div>
+        <aside class="inspector-panel" aria-label="SpanGrid controls">
+          <h3>Presets</h3>
+          <div id="spangrid-preset-list" class="preset-list"></div>
+          <label class="control-field"><span>Render mode</span><select id="spangrid-render-mode"><option value="html">HTML overlay</option><option value="canvas">Canvas text</option></select></label>
+          <label class="control-field"><span>Scroll mode</span><select id="spangrid-scroll-mode"><option value="pixel">Pixel</option><option value="cell">Cell</option></select></label>
+          <label class="check-row"><input id="spangrid-readonly" type="checkbox"> Readonly</label>
+          <label class="control-field"><span>Zoom</span><input id="spangrid-zoom" type="range" min="70" max="180" step="10" value="100"></label>
+          <button id="spangrid-export" class="secondary-btn">Export JSON</button>
+          <textarea id="spangrid-json-output" class="json-output" spellcheck="false"></textarea>
+        </aside>
+      </div>
+    </section>
+
+    <section class="package-screen" id="timeline">
+      <div class="package-head">
+        <div>
+          <p class="eyebrow">@pomelo-suite/timeline</p>
+          <h2>Canvas timeline editor</h2>
+        </div>
+        <code>npm install @pomelo-suite/timeline</code>
+      </div>
+      <div class="studio-layout">
+        <div class="stage-panel">
+          <div class="timeline-stage">
+            <canvas id="timeline-canvas" width="1200" height="600" tabindex="0"></canvas>
+            <input type="text" id="timelineEditBox" aria-label="Timeline item text">
+            <div id="timelineContextMenu" class="context-menu">
+              <div class="context-menu-item" data-action="insert">Insert track</div>
+              <div class="context-menu-item" data-action="delete"> Delete</div>
+            </div>
+          </div>
+        </div>
+        <aside class="inspector-panel" aria-label="Timeline controls">
+          <h3>Timeline</h3>
+          <label class="control-field"><span>Preset</span><select id="timeline-preset-control"><option value="editorial">Editorial timeline</option><option value="launch">Launch plan</option></select></label>
+          <label class="control-field"><span>Frame width</span><input id="timeline-frame-width-control" type="range" min="8" max="64" step="2" value="16"></label>
+          <label class="control-field"><span>Frame count</span><input id="timeline-frame-count-control" type="number" min="120" max="1200" value="600"></label>
+          <label class="control-field"><span>Snap grid</span><input id="timeline-snap-control" type="number" min="1" max="64" value="16"></label>
+          <button id="timeline-add-track" class="secondary-btn">Add track</button>
+          <button id="timeline-add-clip" class="secondary-btn">Add clip</button>
+          <button id="timeline-reset" class="secondary-btn">Reset timeline</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="package-screen" id="scheduler">
+      <div class="package-head">
+        <div>
+          <p class="eyebrow">@pomelo-suite/scheduler</p>
+          <h2>Scheduler timing lab</h2>
+        </div>
+        <code>npm install @pomelo-suite/scheduler</code>
+      </div>
+      <div class="studio-layout">
+        <div class="stage-panel">
+          <div id="scheduler-summary" class="scheduler-summary">ready</div>
+          <div id="scheduler-timeline" class="scheduler-timeline" aria-label="Selected scheduler run timeline"></div>
+          <div id="scheduler-type-grid" class="scheduler-type-grid" aria-label="Schedule type comparison"></div>
+          <ol id="scheduler-event-log" class="scheduler-events"></ol>
+        </div>
+        <aside class="inspector-panel" aria-label="Scheduler controls">
+          <h3>Schedule Management</h3>
+          <label class="control-field"><span>Type</span><select id="scheduler-type-control">
+            <option value="ONETIME">ONETIME</option>
+            <option value="INTERVAL">INTERVAL</option>
+            <option value="INTERVAL2">INTERVAL2</option>
+            <option value="MINUTELY">MINUTELY</option>
+            <option value="TIMELY">TIMELY</option>
+            <option value="DAILY">DAILY</option>
+            <option value="WEEKLY">WEEKLY</option>
+            <option value="MONTHLY" selected>MONTHLY</option>
+            <option value="FIXTIME">FIXTIME</option>
+            <option value="FIXDAILY">FIXDAILY</option>
+            <option value="FIXMONTHLY">FIXMONTHLY</option>
+          </select></label>
+          <label class="control-field"><span>Start time</span><input id="scheduler-start-control" type="datetime-local" value="2026-01-31T09:30"></label>
+          <label class="control-field"><span>Interval seconds</span><input id="scheduler-interval-control" type="number" min="1" max="86400" value="60"></label>
+          <label class="control-field"><span>Delay ms</span><input id="scheduler-delay-ms" type="number" min="0" max="10000" value="1000"></label>
+          <label class="control-field"><span>Fixed hour</span><input id="scheduler-fixed-hour-control" type="number" min="0" max="23" value="6"></label>
+          <label class="control-field"><span>Fixed day</span><input id="scheduler-fixed-day-control" type="number" min="1" max="31" value="31"></label>
+          <label class="control-field"><span>Trigger count</span><input id="scheduler-trigger-count-control" type="number" min="1" max="12" value="3"></label>
+          <button id="scheduler-run" class="primary-btn">Run scheduler</button>
+          <button id="scheduler-reset" class="secondary-btn">Reset lab</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="package-screen" id="workqueue">
+      <div class="package-head">
+        <div>
+          <p class="eyebrow">@pomelo-suite/workqueue</p>
+          <h2>Work queue state lab</h2>
+        </div>
+        <code>npm install @pomelo-suite/workqueue</code>
+      </div>
+      <div class="studio-layout">
+        <div class="stage-panel">
+          <svg id="workqueue-diagram" class="workqueue-diagram" viewBox="0 0 780 270" role="img" aria-labelledby="workqueue-title">
+            <title id="workqueue-title">WorkQueue state flow</title>
+            <defs>
+              <marker id="workqueue-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#6b7280"></path>
+              </marker>
+            </defs>
+            <path class="workqueue-edge" d="M44 135 H92"></path>
+            <path class="workqueue-edge" d="M192 135 H236"></path>
+            <path class="workqueue-edge" d="M266 118 V66 H332"></path>
+            <path class="workqueue-edge" d="M266 152 V204 H332"></path>
+            <path class="workqueue-edge" d="M432 66 H494"></path>
+            <path class="workqueue-edge" d="M494 66 H526 V118 H560"></path>
+            <path class="workqueue-edge" d="M432 204 H494 V152 H560"></path>
+            <path class="workqueue-edge" d="M590 152 V214 H512"></path>
+            <path class="workqueue-edge" d="M608 135 H656"></path>
+            <path class="workqueue-edge" d="M756 135 H772"></path>
+            <circle class="workqueue-terminal workqueue-start" cx="28" cy="135" r="15"></circle>
+            <path class="workqueue-play" d="M23 126 L39 135 L23 144 z"></path>
+            <circle class="workqueue-terminal workqueue-stop" cx="764" cy="135" r="15"></circle>
+            <rect class="workqueue-stop-icon" x="758" y="129" width="12" height="12"></rect>
+            <g class="workqueue-node workqueue-node-created">
+              <rect x="92" y="102" width="100" height="66" rx="10"></rect>
+              <text x="142" y="126">C</text>
+              <text x="142" y="144">Created</text>
+              <text id="workqueue-count-created" class="workqueue-count" x="142" y="160">0</text>
+            </g>
+            <g class="workqueue-gateway">
+              <path d="M251 135 L266 120 L281 135 L266 150 z"></path>
+              <text x="266" y="140">x</text>
+            </g>
+            <g class="workqueue-node workqueue-node-scheduled">
+              <rect x="332" y="33" width="100" height="66" rx="10"></rect>
+              <text x="382" y="57">S</text>
+              <text x="382" y="75">Scheduled</text>
+              <text id="workqueue-count-scheduled" class="workqueue-count" x="382" y="91">0</text>
+            </g>
+            <g class="workqueue-node workqueue-node-queued">
+              <rect x="332" y="171" width="100" height="66" rx="10"></rect>
+              <text x="382" y="195">Q</text>
+              <text x="382" y="213">Queued</text>
+              <text id="workqueue-count-queued" class="workqueue-count" x="382" y="229">0</text>
+            </g>
+            <g class="workqueue-node workqueue-node-running">
+              <rect x="494" y="33" width="100" height="66" rx="10"></rect>
+              <text x="544" y="57">R</text>
+              <text x="544" y="75">Running</text>
+              <text id="workqueue-count-running" class="workqueue-count" x="544" y="91">0</text>
+            </g>
+            <g class="workqueue-gateway workqueue-join">
+              <path d="M575 135 L590 120 L605 135 L590 150 z"></path>
+              <text x="590" y="140">+</text>
+            </g>
+            <g class="workqueue-node workqueue-node-failed">
+              <rect x="494" y="181" width="100" height="66" rx="10"></rect>
+              <text x="544" y="205">F</text>
+              <text x="544" y="223">Failed</text>
+              <text id="workqueue-count-failing" class="workqueue-count" x="544" y="239">0</text>
+            </g>
+            <g class="workqueue-node workqueue-node-completed">
+              <rect x="656" y="102" width="100" height="66" rx="10"></rect>
+              <text x="706" y="126">C</text>
+              <text x="706" y="144">Completed</text>
+              <text id="workqueue-count-completed" class="workqueue-count" x="706" y="160">0</text>
+            </g>
+          </svg>
+          <div id="workqueue-summary" class="workqueue-summary">ready</div>
+          <div id="workqueue-item-list" class="workqueue-items"></div>
+          <ol id="workqueue-event-log" class="workqueue-events"></ol>
+        </div>
+        <aside class="inspector-panel" aria-label="WorkQueue controls">
+          <h3>Work Management</h3>
+          <label class="control-field"><span>Concurrent limit</span><input id="workqueue-concurrent-limit" type="number" min="1" max="8" value="2"></label>
+          <label class="control-field"><span>Items</span><textarea id="workqueue-items" spellcheck="false">alpha,beta,gamma,delta</textarea></label>
+          <label class="control-field"><span>Fail item</span><input id="workqueue-fail-item" type="text" value="gamma"></label>
+          <label class="control-field"><span>Delay ms</span><input id="workqueue-delay-ms" type="number" min="0" max="10000" value="80"></label>
+          <button id="workqueue-run" class="primary-btn">Run queue</button>
+          <button id="workqueue-reset" class="secondary-btn">Reset lab</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="package-screen" id="node-runtime">
+      <div class="package-head">
+        <div>
+          <p class="eyebrow">@pomelo-suite/runtime</p>
+          <h2>Node package runtime checks</h2>
+        </div>
+        <code>npm install @pomelo-suite/runtime</code>
+      </div>
+      <div class="studio-layout single-panel">
+        <div class="stage-panel">
+          <div id="node-feature-list" class="feature-list">
+            <button class="feature-item active" data-node-feature="calculator">Calculator</button>
+            <button class="feature-item" data-node-feature="scheduler">Scheduler</button>
+            <button class="feature-item" data-node-feature="workqueue">WorkQueue</button>
+            <button class="feature-item" data-node-feature="runtime">Runtime</button>
+          </div>
+          <div class="node-runner">
+            <div id="node-feature-summary" class="feature-summary"></div>
+            <label class="control-field"><span id="node-input-label">Expression</span><textarea id="node-feature-input" spellcheck="false">1+2*3</textarea></label>
+            <button id="node-run-feature" class="primary-btn">Run feature</button>
+            <pre id="node-feature-output">ready</pre>
+          </div>
+        </div>
+        <aside class="inspector-panel" aria-label="Node runtime controls" hidden></aside>
+      </div>
+    </section>
+
+    <section class="package-screen" id="diagram">
+      <div class="package-head">
+        <div>
+          <p class="eyebrow">@pomelo-suite/diagram</p>
+          <h2>Diagram editor preview</h2>
+        </div>
+        <code>npm install @pomelo-suite/diagram</code>
+      </div>
+      <div class="studio-layout">
+        <div class="stage-panel">
+          <iframe class="diagram-frame" src="/examples/diagram/diagram-editor.html" title="Pomelo Suite diagram editor"></iframe>
+        </div>
+        <aside class="inspector-panel" aria-label="Diagram controls">
+          <a class="secondary-btn" href="/examples/diagram/diagram-editor.html" target="_blank" rel="noreferrer">Open full editor</a>
+          <a class="secondary-btn" href="/examples/diagram/renderer-lab.html" target="_blank" rel="noreferrer">Open renderer lab</a>
+        </aside>
+      </div>
+    </section>
+
+    <section class="package-screen" id="catalog">
+      <div class="package-head">
+        <div>
+          <p class="eyebrow">Pomelo Suite</p>
+          <h2>Package catalog</h2>
+        </div>
+        <code>npm install pomelo-suite</code>
+      </div>
+      <div class="studio-layout single-panel">
+        <div class="stage-panel">
+          <div id="catalog-grid" class="catalog-grid"></div>
+        </div>
+        <aside class="inspector-panel" aria-label="Catalog controls" hidden></aside>
+      </div>
+    </section>
+  </main>
+
+  <div id="inputContextMenu" class="context-menu"></div>
+
+  <script src="/packages/input/src/text-input-pro.js"></script>
+  <script src="/packages/color-picker/src/color-picker.js"></script>
+  <script src="/packages/spangrid/src/span-grid.js"></script>
+  <script src="/packages/timeline/src/timeline-editor.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

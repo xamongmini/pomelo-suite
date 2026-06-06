@@ -1,0 +1,45 @@
+{
+  "name": "@pomelo-suite/calculator",
+  "version": "0.1.0",
+  "description": "Dependency-free expression evaluator and legacy script calculator utilities.",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xamongmini/pomelo-suite.git",
+    "directory": "packages/calculator"
+  },
+  "bugs": {
+    "url": "https://github.com/xamongmini/pomelo-suite/issues"
+  },
+  "homepage": "https://github.com/xamongmini/pomelo-suite/tree/main/packages/calculator#readme",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "pomelo-suite",
+    "calculator",
+    "expression",
+    "formula"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "require": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "pomeloSuite": {
+    "stability": "stable"
+  }
+}

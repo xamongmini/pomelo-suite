@@ -2,16 +2,27 @@
   "name": "pomelo-suite",
   "version": "0.1.0",
   "private": true,
-  "description": "Canvas SpanGrid control for web applications.",
+  "description": "Canvas SpanGrid control and related design integrations.",
   "type": "commonjs",
   "workspaces": [
-    "packages/spangrid"
+    "packages/spangrid",
+    "packages/calculator",
+    "packages/scheduler",
+    "packages/workqueue",
+    "packages/runtime",
+    "packages/color-picker",
+    "packages/input",
+    "packages/timeline",
+    "packages/diagram",
+    "figma-plugins/grideditor"
   ],
   "scripts": {
-    "test": "node --test tests/*.test.js && npm run test --workspace @pomelo-suite/spangrid --if-present",
+    "test": "node --test tests/*.test.js && npm run test --workspaces --if-present",
     "lint:syntax": "node scripts/check-js-syntax.cjs",
     "check": "npm run lint:syntax && npm test",
-    "pack:dry-run": "npm pack --workspace @pomelo-suite/spangrid --dry-run"
+    "pack:dry-run": "npm pack --workspace @pomelo-suite/spangrid --workspace @pomelo-suite/calculator --workspace @pomelo-suite/scheduler --workspace @pomelo-suite/workqueue --workspace @pomelo-suite/runtime --workspace @pomelo-suite/color-picker --workspace @pomelo-suite/input --workspace @pomelo-suite/timeline --workspace @pomelo-suite/diagram --dry-run",
+    "package-studio": "node examples/package-studio/server.js",
+    "runtime-playground": "node examples/runtime/server.js"
   },
   "repository": {
     "type": "git",
@@ -22,7 +33,10 @@
     "canvas",
     "grid",
     "data-grid",
-    "spangrid"
+    "spangrid",
+    "scheduler",
+    "workqueue",
+    "runtime"
   ],
   "author": "xamongmini",
   "license": "MIT",

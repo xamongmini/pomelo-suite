@@ -1,0 +1,46 @@
+{
+  "name": "@pomelo-suite/timeline",
+  "version": "0.1.0",
+  "description": "Canvas timeline editor for Pomelo Suite.",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xamongmini/pomelo-suite.git",
+    "directory": "packages/timeline"
+  },
+  "bugs": {
+    "url": "https://github.com/xamongmini/pomelo-suite/issues"
+  },
+  "homepage": "https://github.com/xamongmini/pomelo-suite/tree/main/packages/timeline#readme",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "browser": "src/timeline-editor.js",
+  "exports": {
+    ".": {
+      "browser": "./src/timeline-editor.js",
+      "require": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "pomelo-suite",
+    "canvas",
+    "timeline"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "pomeloSuite": {
+    "stability": "stable"
+  }
+}

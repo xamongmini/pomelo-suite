@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomelo Diagram Renderer Lab</title>
+  <link rel="stylesheet" href="renderer-lab.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Renderer Lab</h1>
+      <p>@pomelo-suite/diagram rendering and data API</p>
+    </div>
+    <div class="actions">
+      <button id="resetBtn" type="button">Reset</button>
+      <button id="addNodeBtn" type="button">Add Node</button>
+      <button id="addLinkBtn" type="button">Add Link</button>
+      <button id="deleteBtn" type="button">Delete</button>
+      <button id="renderBtn" type="button" class="primary">Render</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="panel source-panel">
+      <div class="panel-title">
+        <h2>Diagram Data</h2>
+        <button id="exportBtn" type="button">Export</button>
+      </div>
+      <textarea id="sourceInput" spellcheck="false"></textarea>
+      <pre id="statusOutput"></pre>
+    </section>
+
+    <section class="panel canvas-panel">
+      <div class="panel-title">
+        <h2>Canvas Editor</h2>
+        <span id="metricsLabel"></span>
+      </div>
+      <div class="editor-status">
+        <span id="selectedLabel">No selection</span>
+      </div>
+      <canvas id="diagramCanvas" width="960" height="560"></canvas>
+    </section>
+  </main>
+
+  <script src="../../packages/diagram/src/diagram-renderer.js"></script>
+  <script src="renderer-lab.js"></script>
+</body>
+</html>

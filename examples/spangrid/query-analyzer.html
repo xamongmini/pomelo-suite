@@ -1,0 +1,1191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpanGrid Query Analyzer Example</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f5f7fa;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --ink: #17202f;
+      --muted: #667085;
+      --line: #d8dee8;
+      --line-strong: #b7c2d0;
+      --teal: #0f766e;
+      --teal-strong: #115e59;
+      --blue: #2563eb;
+      --coral: #d92d20;
+      --amber: #b7791f;
+      --grid-dark: #1a253a;
+      --grid-head: #22304a;
+      --grid-head-sort: #294267;
+      --grid-row: #ffffff;
+      --grid-row-alt: #f8fafc;
+      --grid-number: #edf2f7;
+      --grid-text: #1f2937;
+      --grid-muted: #7b8797;
+      --focus: #0f766e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--page);
+      font: 13px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 10px;
+      color: var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--line-strong);
+      background: #f9fafb;
+    }
+
+    button.primary {
+      border-color: var(--teal);
+      color: #fff;
+      background: var(--teal);
+    }
+
+    button.primary:hover {
+      background: var(--teal-strong);
+    }
+
+    button.ghost {
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .topbar {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      white-space: nowrap;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .top-meta {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .top-actions a {
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 10px;
+      color: var(--ink);
+      background: #fff;
+      text-decoration: none;
+    }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
+    }
+
+    .query-pane {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto minmax(160px, 1fr) auto auto;
+      gap: 12px;
+      padding: 14px;
+      border-right: 1px solid var(--line);
+      background: var(--panel);
+      overflow: auto;
+    }
+
+    .pane-section {
+      display: grid;
+      gap: 8px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .db-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px;
+      background: var(--panel-soft);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 2px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 11px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sample-list,
+    .table-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .sample-list button,
+    .table-list button {
+      width: 100%;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .sample-list button.active {
+      border-color: var(--teal);
+      box-shadow: inset 0 0 0 1px var(--teal);
+    }
+
+    .sample-list small,
+    .table-list small {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .editor-wrap {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(150px, 1fr);
+      gap: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 170px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px;
+      color: #111827;
+      background: #fff;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      tab-size: 2;
+    }
+
+    textarea:focus,
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid rgba(15, 118, 110, .24);
+      outline-offset: 1px;
+    }
+
+    .query-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .result-pane {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .result-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .result-title {
+      min-width: 0;
+    }
+
+    .result-title strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .result-title span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .result-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .grid-shell {
+      min-width: 0;
+      min-height: 360px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 18px;
+      grid-template-rows: minmax(0, 1fr) 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel);
+      box-shadow: 0 14px 38px rgba(20, 33, 52, .09);
+    }
+
+    canvas {
+      grid-column: 1;
+      grid-row: 1;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: default;
+    }
+
+    .scroll-y {
+      grid-column: 2;
+      grid-row: 1;
+      width: 18px;
+      height: 100%;
+      writing-mode: vertical-rl;
+      direction: rtl;
+    }
+
+    .scroll-x {
+      grid-column: 1;
+      grid-row: 2;
+      width: 100%;
+      height: 28px;
+    }
+
+    .corner {
+      grid-column: 2;
+      grid-row: 2;
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      background: #edf2f7;
+    }
+
+    .span-grid-cell-editor {
+      border: 2px solid var(--teal);
+      border-radius: 3px;
+      padding: 0 5px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, .18);
+    }
+
+    .status-bar {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status-bar strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .error {
+      color: var(--coral);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      border-radius: 999px;
+      padding: 0 8px;
+      color: var(--teal);
+      background: #ccfbf1;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 980px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .query-pane {
+        grid-template-rows: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .db-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .result-head,
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">SpanGrid Query Analyzer <span id="version">v0.1.1</span></div>
+      <div class="top-meta">Local sample database, SQLite-style queries, fixed row and column headers.</div>
+      <nav class="top-actions" aria-label="Example links">
+        <a href="index.html">Grid Editor</a>
+        <a href="spreadsheet.html">Spreadsheet</a>
+        <a href="meta-management.html">Meta Management</a>
+        <a href="showcase.html">Showcase</a>
+      </nav>
+    </header>
+
+    <main class="workspace">
+      <aside class="query-pane">
+        <section class="pane-section">
+          <div class="section-head">Local sample database <span class="pill">in memory</span></div>
+          <div class="db-summary">
+            <div class="metric"><strong id="metricTables">0</strong><span>tables</span></div>
+            <div class="metric"><strong id="metricRows">0</strong><span>rows</span></div>
+            <div class="metric"><strong id="metricCols">0</strong><span>columns</span></div>
+          </div>
+          <p class="note">This browser-only example uses a small SQLite-style executor so the SpanGrid data view can be tested without a server.</p>
+        </section>
+
+        <section class="pane-section">
+          <div class="section-head">Sample queries</div>
+          <div id="sampleList" class="sample-list"></div>
+        </section>
+
+        <section class="editor-wrap">
+          <div class="section-head">SQL source <span>one statement</span></div>
+          <textarea id="sqlInput" spellcheck="false"></textarea>
+        </section>
+
+        <div class="query-actions">
+          <button id="runQuery" class="primary" type="button">Run query</button>
+          <button id="resetQuery" type="button">Reset sample</button>
+        </div>
+
+        <section class="pane-section">
+          <div class="section-head">Tables</div>
+          <div id="tableList" class="table-list"></div>
+        </section>
+      </aside>
+
+      <section class="result-pane">
+        <div class="result-head">
+          <div class="result-title">
+            <strong id="resultTitle">Query result</strong>
+            <span id="resultSummary">Run a sample query to populate the grid.</span>
+          </div>
+          <div class="result-actions">
+            <button id="copySelected" type="button">Copy selection</button>
+            <button id="copyAll" type="button">Copy all TSV</button>
+            <button id="clearCell" type="button">Clear cell</button>
+          </div>
+        </div>
+
+        <div class="grid-shell">
+          <canvas id="gridCanvas" width="1100" height="620" tabindex="0"></canvas>
+          <input id="vScroll" class="scroll-y" type="range" min="0" max="0" value="0" aria-label="Vertical scroll">
+          <input id="hScroll" class="scroll-x" type="range" min="0" max="0" value="0" aria-label="Horizontal scroll">
+          <div class="corner"></div>
+        </div>
+
+        <div class="status-bar">
+          <span id="status">Ready</span>
+          <span><strong id="gridShape">0 x 0</strong></span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../../packages/spangrid/src/span-grid.js"></script>
+  <script>
+    const {
+      VERSION,
+      BorderDirection,
+      SpanGridBorder,
+      SpanGridCanvasView,
+      SpanGridCol,
+      SpanGridControl,
+      SpanGridFixed,
+      SpanGridRow,
+    } = window.SpanGrid;
+
+    const DB_SCHEMAS = {
+      orders: [
+        ["order_id", "INTEGER"],
+        ["ordered_at", "TEXT"],
+        ["customer_name", "TEXT"],
+        ["segment", "TEXT"],
+        ["region", "TEXT"],
+        ["status", "TEXT"],
+        ["order_total", "REAL"],
+        ["margin_pct", "REAL"],
+        ["shipped_at", "TEXT"],
+      ],
+      customers: [
+        ["customer_id", "INTEGER"],
+        ["customer_name", "TEXT"],
+        ["segment", "TEXT"],
+        ["city", "TEXT"],
+        ["region", "TEXT"],
+        ["credit_limit", "REAL"],
+        ["active", "INTEGER"],
+      ],
+      products: [
+        ["sku", "TEXT"],
+        ["product_name", "TEXT"],
+        ["category", "TEXT"],
+        ["unit_price", "REAL"],
+        ["stock_qty", "INTEGER"],
+        ["reorder_level", "INTEGER"],
+      ],
+    };
+
+    const SAMPLE_DATABASE = {
+      orders: [
+        { order_id: 1001, ordered_at: "2026-05-01", customer_name: "Northstar Labs", segment: "Enterprise", region: "West", status: "Closed", order_total: 18420.75, margin_pct: 31.2, shipped_at: "2026-05-04" },
+        { order_id: 1002, ordered_at: "2026-05-02", customer_name: "Kumo Retail", segment: "Mid Market", region: "APAC", status: "Processing", order_total: 7420.00, margin_pct: 24.6, shipped_at: null },
+        { order_id: 1003, ordered_at: "2026-05-03", customer_name: "Orbit Works", segment: "SMB", region: "East", status: "Closed", order_total: 2360.45, margin_pct: 19.8, shipped_at: "2026-05-05" },
+        { order_id: 1004, ordered_at: "2026-05-03", customer_name: "Blue Harbor", segment: "Enterprise", region: "South", status: "Closed", order_total: 15690.20, margin_pct: 34.4, shipped_at: "2026-05-06" },
+        { order_id: 1005, ordered_at: "2026-05-04", customer_name: "Delta Foods", segment: "Mid Market", region: "West", status: "Risk", order_total: 9120.10, margin_pct: 17.2, shipped_at: null },
+        { order_id: 1006, ordered_at: "2026-05-05", customer_name: "Pioneer Health", segment: "Enterprise", region: "East", status: "Closed", order_total: 22110.00, margin_pct: 38.9, shipped_at: "2026-05-08" },
+        { order_id: 1007, ordered_at: "2026-05-06", customer_name: "Metro Services", segment: "SMB", region: "North", status: "Processing", order_total: 1380.00, margin_pct: 12.5, shipped_at: null },
+        { order_id: 1008, ordered_at: "2026-05-07", customer_name: "Evergreen Studio", segment: "SMB", region: "West", status: "Closed", order_total: 4280.90, margin_pct: 26.1, shipped_at: "2026-05-10" },
+        { order_id: 1009, ordered_at: "2026-05-08", customer_name: "Aster Grid", segment: "Enterprise", region: "North", status: "Closed", order_total: 17540.30, margin_pct: 29.7, shipped_at: "2026-05-11" },
+        { order_id: 1010, ordered_at: "2026-05-09", customer_name: "Mira Logistics", segment: "Mid Market", region: "South", status: "Processing", order_total: 6850.50, margin_pct: 21.4, shipped_at: null },
+        { order_id: 1011, ordered_at: "2026-05-10", customer_name: "Sunline Travel", segment: "SMB", region: "APAC", status: "Closed", order_total: 3190.00, margin_pct: 22.2, shipped_at: "2026-05-13" },
+        { order_id: 1012, ordered_at: "2026-05-11", customer_name: "Cobalt Systems", segment: "Enterprise", region: "West", status: "Closed", order_total: 26800.40, margin_pct: 41.0, shipped_at: "2026-05-15" },
+        { order_id: 1013, ordered_at: "2026-05-12", customer_name: "Noble Craft", segment: "SMB", region: "East", status: "Risk", order_total: 2080.25, margin_pct: 9.4, shipped_at: null },
+        { order_id: 1014, ordered_at: "2026-05-13", customer_name: "Vector Media", segment: "Mid Market", region: "North", status: "Closed", order_total: 11960.70, margin_pct: 27.8, shipped_at: "2026-05-16" },
+        { order_id: 1015, ordered_at: "2026-05-14", customer_name: "Luma Energy", segment: "Enterprise", region: "South", status: "Processing", order_total: 19540.15, margin_pct: 33.3, shipped_at: null },
+        { order_id: 1016, ordered_at: "2026-05-15", customer_name: "Brightline Ops", segment: "Mid Market", region: "East", status: "Closed", order_total: 8300.00, margin_pct: 25.1, shipped_at: "2026-05-18" },
+        { order_id: 1017, ordered_at: "2026-05-16", customer_name: "Urban Nest", segment: "SMB", region: "West", status: "Closed", order_total: 2740.60, margin_pct: 18.6, shipped_at: "2026-05-19" },
+        { order_id: 1018, ordered_at: "2026-05-17", customer_name: "Atlas Forge", segment: "Enterprise", region: "APAC", status: "Closed", order_total: 24780.00, margin_pct: 36.5, shipped_at: "2026-05-21" },
+      ],
+      customers: [
+        { customer_id: 1, customer_name: "Northstar Labs", segment: "Enterprise", city: "San Jose", region: "West", credit_limit: 75000, active: 1 },
+        { customer_id: 2, customer_name: "Kumo Retail", segment: "Mid Market", city: "Seoul", region: "APAC", credit_limit: 36000, active: 1 },
+        { customer_id: 3, customer_name: "Orbit Works", segment: "SMB", city: "Boston", region: "East", credit_limit: 12000, active: 1 },
+        { customer_id: 4, customer_name: "Blue Harbor", segment: "Enterprise", city: "Austin", region: "South", credit_limit: 68000, active: 1 },
+        { customer_id: 5, customer_name: "Delta Foods", segment: "Mid Market", city: "Portland", region: "West", credit_limit: 30000, active: 0 },
+        { customer_id: 6, customer_name: "Pioneer Health", segment: "Enterprise", city: "New York", region: "East", credit_limit: 82000, active: 1 },
+        { customer_id: 7, customer_name: "Metro Services", segment: "SMB", city: "Chicago", region: "North", credit_limit: 9000, active: 1 },
+        { customer_id: 8, customer_name: "Cobalt Systems", segment: "Enterprise", city: "Seattle", region: "West", credit_limit: 91000, active: 1 },
+      ],
+      products: [
+        { sku: "SG-100", product_name: "Grid Runtime", category: "Software", unit_price: 299, stock_qty: 300, reorder_level: 50 },
+        { sku: "SG-210", product_name: "Canvas Renderer", category: "Software", unit_price: 449, stock_qty: 180, reorder_level: 40 },
+        { sku: "KIT-24", product_name: "Operator Kit", category: "Hardware", unit_price: 129, stock_qty: 32, reorder_level: 60 },
+        { sku: "DOC-9", product_name: "Deployment Guide", category: "Docs", unit_price: 39, stock_qty: 410, reorder_level: 80 },
+        { sku: "SUP-1", product_name: "Priority Support", category: "Service", unit_price: 799, stock_qty: 999, reorder_level: 10 },
+        { sku: "KIT-64", product_name: "Field Pack", category: "Hardware", unit_price: 249, stock_qty: 24, reorder_level: 45 },
+      ],
+    };
+
+    const SAMPLE_QUERIES = [
+      {
+        id: "orders",
+        label: "Top orders",
+        detail: "ORDER BY",
+        sql: "SELECT * FROM orders ORDER BY order_total DESC LIMIT 25",
+      },
+      {
+        id: "schema",
+        label: "Order schema",
+        detail: "PRAGMA",
+        sql: "PRAGMA table_info(orders)",
+      },
+      {
+        id: "revenue",
+        label: "Revenue by region",
+        detail: "GROUP BY",
+        sql: "SELECT region, COUNT(*) AS order_count, SUM(order_total) AS revenue FROM orders GROUP BY region ORDER BY revenue DESC",
+      },
+      {
+        id: "enterprise",
+        label: "Enterprise customers",
+        detail: "WHERE",
+        sql: "SELECT customer_name, segment, city, credit_limit FROM customers WHERE segment = 'Enterprise' ORDER BY credit_limit DESC LIMIT 20",
+      },
+      {
+        id: "nulls",
+        label: "Open shipments",
+        detail: "NULL",
+        sql: "SELECT order_id, customer_name, status, order_total, shipped_at FROM orders WHERE shipped_at IS NULL ORDER BY order_id",
+      },
+      {
+        id: "stock",
+        label: "Low stock",
+        detail: "FILTER",
+        sql: "SELECT sku, product_name, category, unit_price, stock_qty FROM products WHERE stock_qty < 50 ORDER BY stock_qty ASC",
+      },
+    ];
+
+    const COLORS = {
+      headerBg: "#22304a",
+      headerBgSort: "#294267",
+      headerFg: "#dbe7f5",
+      headerFgSort: "#9fd3ff",
+      rowHeaderBg: "#edf2f7",
+      rowHeaderFg: "#536171",
+      rowAlt: "#f8fafc",
+      row: "#ffffff",
+      text: "#1f2937",
+      muted: "#8a95a5",
+      number: "#0f766e",
+      nullText: "#98a2b3",
+      line: "#d8dee8",
+      focus: "#0f766e",
+    };
+
+    const state = {
+      queryId: "orders",
+      result: null,
+      displayRows: [],
+      sortState: { col: null, asc: true },
+      grid: null,
+      view: null,
+    };
+
+    const dom = {
+      version: document.getElementById("version"),
+      sampleList: document.getElementById("sampleList"),
+      tableList: document.getElementById("tableList"),
+      sqlInput: document.getElementById("sqlInput"),
+      runQuery: document.getElementById("runQuery"),
+      resetQuery: document.getElementById("resetQuery"),
+      resultTitle: document.getElementById("resultTitle"),
+      resultSummary: document.getElementById("resultSummary"),
+      status: document.getElementById("status"),
+      gridShape: document.getElementById("gridShape"),
+      canvas: document.getElementById("gridCanvas"),
+      hScroll: document.getElementById("hScroll"),
+      vScroll: document.getElementById("vScroll"),
+      copySelected: document.getElementById("copySelected"),
+      copyAll: document.getElementById("copyAll"),
+      clearCell: document.getElementById("clearCell"),
+      metricTables: document.getElementById("metricTables"),
+      metricRows: document.getElementById("metricRows"),
+      metricCols: document.getElementById("metricCols"),
+    };
+
+    dom.version.textContent = `v${VERSION}`;
+
+    function getSchemaColumns(tableName) {
+      const schema = DB_SCHEMAS[tableName];
+      if (!schema) throw new Error(`Unknown table: ${tableName}`);
+      return schema.map((item) => item[0]);
+    }
+
+    function schemaRows() {
+      return Object.entries(SAMPLE_DATABASE).map(([name, rows]) => ({
+        name,
+        type: "table",
+        row_count: rows.length,
+      }));
+    }
+
+    function tableInfoRows(tableName) {
+      const schema = DB_SCHEMAS[tableName];
+      if (!schema) throw new Error(`Unknown table: ${tableName}`);
+      return schema.map(([name, type], cid) => ({
+        cid,
+        name,
+        type,
+        notnull: 0,
+        dflt_value: null,
+        pk: cid === 0 ? 1 : 0,
+      }));
+    }
+
+    function normalizeSql(sql) {
+      return String(sql || "").replace(/\s+/g, " ").trim().replace(/;$/, "");
+    }
+
+    function splitCsv(text) {
+      const parts = [];
+      let current = "";
+      let quote = null;
+      let depth = 0;
+      for (const ch of text) {
+        if (quote) {
+          current += ch;
+          if (ch === quote) quote = null;
+          continue;
+        }
+        if (ch === "'" || ch === "\"") {
+          quote = ch;
+          current += ch;
+          continue;
+        }
+        if (ch === "(") depth += 1;
+        if (ch === ")") depth -= 1;
+        if (ch === "," && depth === 0) {
+          parts.push(current.trim());
+          current = "";
+        } else {
+          current += ch;
+        }
+      }
+      if (current.trim()) parts.push(current.trim());
+      return parts;
+    }
+
+    function parseLiteral(value) {
+      const text = String(value).trim();
+      if (/^null$/i.test(text)) return null;
+      if ((text.startsWith("'") && text.endsWith("'")) || (text.startsWith("\"") && text.endsWith("\""))) {
+        return text.slice(1, -1).replace(/''/g, "'");
+      }
+      const number = Number(text);
+      return Number.isNaN(number) ? text : number;
+    }
+
+    function compareValues(left, operator, right) {
+      const bothNumeric = typeof left === "number" && typeof right === "number";
+      const a = bothNumeric ? left : String(left ?? "");
+      const b = bothNumeric ? right : String(right ?? "");
+      if (operator === "=") return a === b;
+      if (operator === "!=" || operator === "<>") return a !== b;
+      if (operator === ">") return a > b;
+      if (operator === "<") return a < b;
+      if (operator === ">=") return a >= b;
+      if (operator === "<=") return a <= b;
+      return false;
+    }
+
+    function rowMatchesWhere(row, whereClause) {
+      if (!whereClause) return true;
+      const clauses = whereClause.split(/\s+AND\s+/i).map((item) => item.trim()).filter(Boolean);
+      return clauses.every((clause) => {
+        const nullMatch = /^([a-z_][a-z0-9_]*)\s+IS\s+(NOT\s+)?NULL$/i.exec(clause);
+        if (nullMatch) {
+          const value = row[nullMatch[1]];
+          return nullMatch[2] ? value !== null && value !== undefined : value === null || value === undefined;
+        }
+        const compareMatch = /^([a-z_][a-z0-9_]*)\s*(=|!=|<>|>=|<=|>|<)\s*(.+)$/i.exec(clause);
+        if (!compareMatch) throw new Error(`Unsupported WHERE clause: ${clause}`);
+        const field = compareMatch[1];
+        if (!(field in row)) throw new Error(`Unknown column in WHERE: ${field}`);
+        return compareValues(row[field], compareMatch[2], parseLiteral(compareMatch[3]));
+      });
+    }
+
+    function parseProjection(selectClause) {
+      const trimmed = selectClause.trim();
+      if (trimmed === "*") return [{ kind: "all" }];
+      return splitCsv(trimmed).map((part) => {
+        const countMatch = /^COUNT\(\*\)(?:\s+AS\s+([a-z_][a-z0-9_]*))?$/i.exec(part);
+        if (countMatch) return { kind: "count", alias: countMatch[1] || "COUNT(*)" };
+
+        const sumMatch = /^SUM\(([a-z_][a-z0-9_]*)\)(?:\s+AS\s+([a-z_][a-z0-9_]*))?$/i.exec(part);
+        if (sumMatch) return { kind: "sum", field: sumMatch[1], alias: sumMatch[2] || `SUM(${sumMatch[1]})` };
+
+        const fieldMatch = /^([a-z_][a-z0-9_]*)(?:\s+AS\s+([a-z_][a-z0-9_]*))?$/i.exec(part);
+        if (fieldMatch) return { kind: "field", field: fieldMatch[1], alias: fieldMatch[2] || fieldMatch[1] };
+
+        throw new Error(`Unsupported SELECT expression: ${part}`);
+      });
+    }
+
+    function materializeRows(tableName) {
+      if (tableName === "local_schema") return schemaRows();
+      const rows = SAMPLE_DATABASE[tableName];
+      if (!rows) throw new Error(`Unknown table: ${tableName}`);
+      return rows.map((row) => ({ ...row }));
+    }
+
+    function projectRows(rows, tableName, projection) {
+      if (projection.length === 1 && projection[0].kind === "all") {
+        const columns = tableName === "local_schema" ? ["name", "type", "row_count"] : getSchemaColumns(tableName);
+        return { columns, rows: rows.map((row) => columns.map((column) => row[column])) };
+      }
+      const columns = projection.map((part) => part.alias);
+      return {
+        columns,
+        rows: rows.map((row) => projection.map((part) => {
+          if (part.kind !== "field") throw new Error("Aggregate expressions require GROUP BY.");
+          if (!(part.field in row)) throw new Error(`Unknown column: ${part.field}`);
+          return row[part.field];
+        })),
+      };
+    }
+
+    function groupRows(rows, groupClause, projection) {
+      const groupFields = splitCsv(groupClause).map((part) => part.trim());
+      const groups = new Map();
+      rows.forEach((row) => {
+        const key = JSON.stringify(groupFields.map((field) => row[field]));
+        if (!groups.has(key)) groups.set(key, { sample: row, rows: [] });
+        groups.get(key).rows.push(row);
+      });
+
+      const columns = projection.map((part) => part.alias || part.field);
+      const outputRows = [...groups.values()].map((group) => projection.map((part) => {
+        if (part.kind === "field") return group.sample[part.field];
+        if (part.kind === "count") return group.rows.length;
+        if (part.kind === "sum") {
+          return Number(group.rows.reduce((sum, row) => sum + Number(row[part.field] || 0), 0).toFixed(2));
+        }
+        throw new Error("SELECT * is not supported with GROUP BY.");
+      }));
+      return { columns, rows: outputRows };
+    }
+
+    function sortRows(rows, columns, orderClause) {
+      if (!orderClause) return rows;
+      const parts = orderClause.trim().split(/\s+/);
+      const columnName = parts[0];
+      const descending = /^DESC$/i.test(parts[1] || "");
+      const index = columns.findIndex((column) => column.toLowerCase() === columnName.toLowerCase());
+      if (index < 0) throw new Error(`Unknown ORDER BY column: ${columnName}`);
+      return [...rows].sort((a, b) => compareForSort(a[index], b[index], !descending));
+    }
+
+    function compareForSort(a, b, asc) {
+      if (a === null || a === undefined) return asc ? 1 : -1;
+      if (b === null || b === undefined) return asc ? -1 : 1;
+      const na = Number(a);
+      const nb = Number(b);
+      const bothNumeric = !Number.isNaN(na) && !Number.isNaN(nb) && String(a).trim() !== "" && String(b).trim() !== "";
+      const result = bothNumeric ? na - nb : String(a).localeCompare(String(b));
+      return asc ? result : -result;
+    }
+
+    function executeQuery(sql) {
+      const normalized = normalizeSql(sql);
+      if (!normalized) throw new Error("Enter a query first.");
+
+      const pragmaMatch = /^PRAGMA\s+table_info\(([a-z_][a-z0-9_]*)\)$/i.exec(normalized);
+      if (pragmaMatch) {
+        const columns = ["cid", "name", "type", "notnull", "dflt_value", "pk"];
+        return {
+          columns,
+          rows: tableInfoRows(pragmaMatch[1]).map((row) => columns.map((column) => row[column])),
+          message: `Schema for ${pragmaMatch[1]}`,
+        };
+      }
+
+      if (/^SELECT\s+sqlite_version\(\)$/i.test(normalized)) {
+        return { columns: ["sqlite_version()"], rows: [["local-sample-3.45"]], message: "SQLite compatibility sample" };
+      }
+
+      const match = /^SELECT\s+(.+?)\s+FROM\s+([a-z_][a-z0-9_]*)(?:\s+WHERE\s+(.+?)(?=\s+GROUP\s+BY|\s+ORDER\s+BY|\s+LIMIT|$))?(?:\s+GROUP\s+BY\s+(.+?)(?=\s+ORDER\s+BY|\s+LIMIT|$))?(?:\s+ORDER\s+BY\s+(.+?)(?=\s+LIMIT|$))?(?:\s+LIMIT\s+(\d+))?$/i.exec(normalized);
+      if (!match) throw new Error("Unsupported SQL. Try SELECT, WHERE, GROUP BY, ORDER BY, LIMIT, or PRAGMA table_info.");
+
+      const [, selectClause, tableName, whereClause, groupClause, orderClause, limitClause] = match;
+      const projection = parseProjection(selectClause);
+      const sourceRows = materializeRows(tableName).filter((row) => rowMatchesWhere(row, whereClause));
+      const projected = groupClause
+        ? groupRows(sourceRows, groupClause, projection)
+        : projectRows(sourceRows, tableName, projection);
+
+      const orderedRows = sortRows(projected.rows, projected.columns, orderClause);
+      const limitedRows = limitClause ? orderedRows.slice(0, Number(limitClause)) : orderedRows;
+      return {
+        columns: projected.columns,
+        rows: limitedRows,
+        message: `${limitedRows.length} row(s) returned from ${tableName}`,
+      };
+    }
+
+    function formatCellValue(value) {
+      if (value === null || value === undefined) return "NULL";
+      if (typeof value === "number") {
+        return Number.isInteger(value) ? String(value) : value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+      }
+      return String(value);
+    }
+
+    function isNumericValue(value) {
+      return typeof value === "number" || (typeof value === "string" && value.trim() !== "" && !Number.isNaN(Number(value)));
+    }
+
+    function setupGrid() {
+      const shell = dom.canvas.parentElement;
+      const width = Math.max(600, shell.clientWidth - 18);
+      const height = Math.max(360, shell.clientHeight - 28);
+      const grid = new SpanGridControl({
+        width,
+        height,
+        backColor: "#ffffff",
+        borderStyle: "None",
+        focusColor: COLORS.focus,
+        lineColor: COLORS.line,
+        lineWidth: 1,
+      });
+      const view = new SpanGridCanvasView(dom.canvas, grid, {
+        hScroll: dom.hScroll,
+        vScroll: dom.vScroll,
+        statusElement: dom.status,
+      });
+
+      grid.onCellClick(({ cell }) => {
+        if (cell && cell.tag && cell.tag.type === "column-header") {
+          const col = cell.tag.colIndex;
+          if (state.sortState.col === col) {
+            state.sortState.asc = !state.sortState.asc;
+          } else {
+            state.sortState.col = col;
+            state.sortState.asc = true;
+          }
+          renderResultGrid(state.result);
+        }
+      });
+
+      dom.canvas.addEventListener("keydown", (event) => {
+        if (event.key === "Delete" || event.key === "Backspace") {
+          clearSelectedCells();
+          event.preventDefault();
+        }
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+          copySelectedCells();
+          event.preventDefault();
+        }
+      });
+
+      const resizeObserver = new ResizeObserver(() => {
+        const nextWidth = Math.max(600, shell.clientWidth - 18);
+        const nextHeight = Math.max(360, shell.clientHeight - 28);
+        if (Math.abs(grid.width - nextWidth) > 2 || Math.abs(grid.height - nextHeight) > 2) {
+          grid.width = nextWidth;
+          grid.height = nextHeight;
+          grid.layout();
+          view.resize();
+          view.draw();
+        }
+      });
+      resizeObserver.observe(shell);
+
+      state.grid = grid;
+      state.view = view;
+    }
+
+    function clearGrid() {
+      const grid = state.grid;
+      grid.rows = [];
+      grid.cols = [];
+      grid.merges = [];
+      grid.fixed = new SpanGridFixed();
+      grid.selectedObjects = [];
+    }
+
+    function applyHeaderBorder(grid) {
+      const border = new SpanGridBorder({
+        color: "#3b5070",
+        borderDirection: BorderDirection.Bottom,
+        lineWidth: 2,
+      });
+      for (let col = 0; col < grid.cols.length; col += 1) {
+        grid.getCell(0, col).border = border;
+      }
+    }
+
+    function sortedDisplayRows(result) {
+      if (!result) return [];
+      if (state.sortState.col === null) return result.rows;
+      return [...result.rows].sort((a, b) => compareForSort(a[state.sortState.col], b[state.sortState.col], state.sortState.asc));
+    }
+
+    function renderResultGrid(result) {
+      const grid = state.grid;
+      if (!grid) return;
+      clearGrid();
+
+      const columns = result ? result.columns : [];
+      const rows = result ? sortedDisplayRows(result) : [];
+      state.displayRows = rows;
+
+      grid.addCol(new SpanGridCol({ width: 48 }));
+      columns.forEach(() => grid.addCol(new SpanGridCol({ width: 120 })));
+      grid.addRow(new SpanGridRow({ height: 30 }));
+
+      const corner = grid.getCell(0, 0);
+      corner.text = "#";
+      corner.backColor = COLORS.headerBg;
+      corner.foreColor = COLORS.rowHeaderFg;
+      corner.font = "bold 12px system-ui, sans-serif";
+      corner.textAlign = "MiddleCenter";
+      corner.tag = { type: "corner-header", editable: false };
+
+      columns.forEach((column, index) => {
+        const cell = grid.getCell(0, index + 1);
+        const sorted = state.sortState.col === index;
+        cell.text = sorted ? `${column} ${state.sortState.asc ? "ASC" : "DESC"}` : column;
+        cell.backColor = sorted ? COLORS.headerBgSort : COLORS.headerBg;
+        cell.foreColor = sorted ? COLORS.headerFgSort : COLORS.headerFg;
+        cell.font = "bold 12px system-ui, sans-serif";
+        cell.textAlign = "MiddleLeft";
+        cell.tag = { type: "column-header", editable: false, colIndex: index };
+      });
+
+      applyHeaderBorder(grid);
+
+      if (rows.length === 0) {
+        grid.addRow(new SpanGridRow({ height: 56 }));
+        const empty = grid.getCell(1, 0);
+        empty.text = result ? "No rows returned" : "Run a query to see results";
+        empty.backColor = COLORS.rowAlt;
+        empty.foreColor = COLORS.muted;
+        empty.textAlign = "MiddleCenter";
+        empty.tag = { type: "empty", editable: false };
+        if (columns.length > 0) grid.mergeCells(1, 0, 1, columns.length);
+      } else {
+        rows.forEach((row, rowIndex) => {
+          grid.addRow(new SpanGridRow({ height: 26 }));
+          const gridRow = rowIndex + 1;
+          const rowBg = rowIndex % 2 === 0 ? COLORS.row : COLORS.rowAlt;
+          const rowHeader = grid.getCell(gridRow, 0);
+          rowHeader.text = String(rowIndex + 1);
+          rowHeader.backColor = COLORS.rowHeaderBg;
+          rowHeader.foreColor = COLORS.rowHeaderFg;
+          rowHeader.font = "11px ui-monospace, SFMono-Regular, Consolas, monospace";
+          rowHeader.textAlign = "MiddleRight";
+          rowHeader.tag = { type: "row-header", editable: false, rowIndex };
+
+          row.forEach((value, colIndex) => {
+            const cell = grid.getCell(gridRow, colIndex + 1);
+            const isNull = value === null || value === undefined;
+            const numeric = isNumericValue(value);
+            cell.text = formatCellValue(value);
+            cell.backColor = rowBg;
+            cell.foreColor = isNull ? COLORS.nullText : numeric ? COLORS.number : COLORS.text;
+            cell.font = "12px ui-monospace, SFMono-Regular, Consolas, monospace";
+            cell.textAlign = numeric ? "MiddleRight" : "MiddleLeft";
+            cell.tag = { type: "data", editable: true, rowIndex, colIndex, originalValue: value };
+          });
+        });
+      }
+
+      grid.fixed = new SpanGridFixed(grid.rows[0], grid.cols[0]);
+      try {
+        grid.autoFitCols({ padding: 18, minWidth: 72, maxWidth: 260, fill: true, fixedCols: { 0: 48 } });
+      } catch (error) {
+        grid.layout();
+      }
+      state.view.resize();
+      state.view.draw();
+      dom.gridShape.textContent = `${rows.length} x ${columns.length}`;
+    }
+
+    function runSql(sql, title) {
+      try {
+        const result = executeQuery(sql);
+        state.result = result;
+        state.sortState = { col: null, asc: true };
+        renderResultGrid(result);
+        dom.resultTitle.textContent = title || "Query result";
+        dom.resultSummary.textContent = result.message;
+        dom.status.textContent = "Ready";
+        dom.status.className = "";
+      } catch (error) {
+        dom.resultTitle.textContent = "Query error";
+        dom.resultSummary.textContent = error.message;
+        dom.status.textContent = error.message;
+        dom.status.className = "error";
+      }
+    }
+
+    function setSample(sample) {
+      state.queryId = sample.id;
+      dom.sqlInput.value = sample.sql;
+      document.querySelectorAll("#sampleList button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.sampleId === sample.id);
+      });
+    }
+
+    function renderSamples() {
+      dom.sampleList.replaceChildren();
+      SAMPLE_QUERIES.forEach((sample) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.sampleId = sample.id;
+        button.innerHTML = `<span>${sample.label}</span><small>${sample.detail}</small>`;
+        button.addEventListener("click", () => {
+          setSample(sample);
+          runSql(sample.sql, sample.label);
+        });
+        dom.sampleList.appendChild(button);
+      });
+    }
+
+    function renderTables() {
+      dom.tableList.replaceChildren();
+      Object.keys(SAMPLE_DATABASE).forEach((tableName) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.innerHTML = `<span>${tableName}</span><small>${SAMPLE_DATABASE[tableName].length} rows</small>`;
+        button.addEventListener("click", () => {
+          const sql = `SELECT * FROM ${tableName} LIMIT 25`;
+          dom.sqlInput.value = sql;
+          runSql(sql, tableName);
+        });
+        dom.tableList.appendChild(button);
+      });
+    }
+
+    function updateMetrics() {
+      const tableNames = Object.keys(SAMPLE_DATABASE);
+      const rowCount = tableNames.reduce((sum, name) => sum + SAMPLE_DATABASE[name].length, 0);
+      const colCount = Object.values(DB_SCHEMAS).reduce((sum, schema) => sum + schema.length, 0);
+      dom.metricTables.textContent = String(tableNames.length);
+      dom.metricRows.textContent = String(rowCount);
+      dom.metricCols.textContent = String(colCount);
+    }
+
+    async function writeClipboard(text) {
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        dom.status.textContent = "Copied to clipboard";
+      } catch (error) {
+        dom.status.textContent = "Clipboard is unavailable in this browser context";
+      }
+    }
+
+    function copySelectedCells() {
+      const grid = state.grid;
+      if (!grid) return;
+      writeClipboard(grid.copySelectionToTsv());
+    }
+
+    function copyAllRows() {
+      if (!state.result) return;
+      const lines = [
+        state.result.columns.join("\t"),
+        ...state.displayRows.map((row) => row.map((value) => value === null || value === undefined ? "" : String(value)).join("\t")),
+      ];
+      writeClipboard(lines.join("\n"));
+    }
+
+    function clearSelectedCells() {
+      const grid = state.grid;
+      if (!grid) return;
+      const cells = grid.selectedCells && grid.selectedCells.length ? grid.selectedCells : (grid.selectedCell ? [grid.selectedCell] : []);
+      cells.forEach((cell) => {
+        if (cell.tag && cell.tag.type === "data") {
+          cell.text = "";
+          cell.tag.originalValue = "";
+        }
+      });
+      state.view.draw();
+    }
+
+    dom.runQuery.addEventListener("click", () => runSql(dom.sqlInput.value, "Ad hoc query"));
+    dom.resetQuery.addEventListener("click", () => {
+      const sample = SAMPLE_QUERIES.find((item) => item.id === state.queryId) || SAMPLE_QUERIES[0];
+      setSample(sample);
+      runSql(sample.sql, sample.label);
+    });
+    dom.copySelected.addEventListener("click", copySelectedCells);
+    dom.copyAll.addEventListener("click", copyAllRows);
+    dom.clearCell.addEventListener("click", clearSelectedCells);
+
+    setupGrid();
+    renderSamples();
+    renderTables();
+    updateMetrics();
+    setSample(SAMPLE_QUERIES[0]);
+    runSql(SAMPLE_QUERIES[0].sql, SAMPLE_QUERIES[0].label);
+  </script>
+</body>
+</html>

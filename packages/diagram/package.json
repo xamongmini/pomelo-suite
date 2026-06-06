@@ -1,0 +1,44 @@
+{
+  "name": "@pomelo-suite/diagram",
+  "version": "0.1.0",
+  "description": "Experimental diagram data and canvas rendering utilities for Pomelo Suite.",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xamongmini/pomelo-suite.git",
+    "directory": "packages/diagram"
+  },
+  "bugs": {
+    "url": "https://github.com/xamongmini/pomelo-suite/issues"
+  },
+  "homepage": "https://github.com/xamongmini/pomelo-suite/tree/main/packages/diagram#readme",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "pomelo-suite",
+    "diagram",
+    "canvas"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "require": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "pomeloSuite": {
+    "stability": "experimental"
+  }
+}

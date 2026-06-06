@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpanGrid Meta Management Example</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #0f172a;
+      --panel: #111827;
+      --panel-2: #172033;
+      --panel-3: #1c2538;
+      --ink: #d8e2ef;
+      --muted: #8ea0b8;
+      --line: #2d3f52;
+      --line-strong: #3b5070;
+      --blue: #60a5fa;
+      --indigo: #818cf8;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #f87171;
+      --shadow: rgba(0, 0, 0, .28);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      margin: 0;
+      min-height: 0;
+      color: var(--ink);
+      background: var(--page);
+      font: 12px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      min-height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 9px;
+      color: var(--ink);
+      background: #182235;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--blue);
+      background: #1d2b44;
+    }
+
+    button.primary {
+      border-color: #2563eb;
+      color: #eff6ff;
+      background: #1d4ed8;
+    }
+
+    button.green {
+      border-color: #15803d;
+      color: #dcfce7;
+      background: #166534;
+    }
+
+    button.danger {
+      border-color: #7f1d1d;
+      color: #fecaca;
+      background: #3a1010;
+    }
+
+    .shell {
+      height: 100vh;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      overflow: hidden;
+    }
+
+    .sidebar {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      border-right: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .sidebar-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      min-width: 0;
+      display: grid;
+      gap: 1px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .example-links {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .example-links a {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: #182235;
+      text-decoration: none;
+    }
+
+    .tree {
+      min-height: 0;
+      padding: 8px 0;
+      overflow: auto;
+    }
+
+    .tree-row {
+      min-height: 28px;
+      display: grid;
+      grid-template-columns: 18px minmax(72px, auto) minmax(0, 1fr);
+      gap: 6px;
+      align-items: center;
+      padding: 0 10px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .tree-row:hover {
+      color: #dbeafe;
+      background: #172033;
+    }
+
+    .tree-row.selected {
+      color: #ffffff;
+      background: #1e3a6e;
+    }
+
+    .tree-toggle {
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .tree-code {
+      color: #93c5fd;
+      font: 11px ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .tree-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .main {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+      background: #0f172a;
+      overflow: hidden;
+    }
+
+    .topbar {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .title {
+      min-width: 0;
+      display: grid;
+      gap: 1px;
+    }
+
+    .title strong {
+      font-size: 15px;
+    }
+
+    .title span {
+      overflow: hidden;
+      color: var(--muted);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .status {
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      background: #111827;
+    }
+
+    .status.ok { color: #86efac; }
+    .status.warn { color: #fcd34d; }
+
+    .path-lab {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto minmax(74px, 96px);
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #121c2e;
+      overflow: hidden;
+    }
+
+    .path-lab-head {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: auto minmax(220px, 1fr) repeat(5, auto);
+      gap: 8px;
+      align-items: center;
+    }
+
+    .path-lab-title {
+      color: #dbeafe;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .path-input {
+      width: 100%;
+      min-height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 9px;
+      color: #d8e2ef;
+      background: #0f172a;
+      font: 12px ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .path-lab-body {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .path-items,
+    .path-result {
+      width: 100%;
+      min-height: 0;
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px;
+      color: #cbd5e1;
+      background: #0f172a;
+      font: 11px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace;
+      resize: none;
+      overflow: auto;
+    }
+
+    .path-result {
+      white-space: pre-wrap;
+    }
+
+    .grid-area {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+      overflow: hidden;
+    }
+
+    .top-grids {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .grid-card {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .grid-card + .grid-card {
+      border-left: 1px solid var(--line);
+    }
+
+    .grid-head {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-3);
+    }
+
+    .grid-title {
+      color: #e2e8f0;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .grid-head .spacer {
+      flex: 1 1 auto;
+    }
+
+    .grid-shell {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 16px;
+      grid-template-rows: minmax(0, 1fr) 24px;
+      background: #1c2333;
+      overflow: hidden;
+    }
+
+    canvas {
+      min-width: 0;
+      min-height: 0;
+      grid-column: 1;
+      grid-row: 1;
+      width: 100%;
+      height: 100%;
+      display: block;
+      outline: none;
+    }
+
+    .scroll-y {
+      grid-column: 2;
+      grid-row: 1;
+      width: 16px;
+      height: 100%;
+      writing-mode: vertical-rl;
+      direction: rtl;
+    }
+
+    .scroll-x {
+      grid-column: 1;
+      grid-row: 2;
+      width: 100%;
+      height: 24px;
+    }
+
+    .corner {
+      grid-column: 2;
+      grid-row: 2;
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      background: #172033;
+    }
+
+    .span-grid-cell-editor {
+      border: 2px solid var(--indigo);
+      border-radius: 3px;
+      padding: 0 5px;
+      color: #e5edf8;
+      background: #111827;
+      outline: none;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, .36);
+    }
+
+    .foot {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      background: #111827;
+    }
+
+    .foot strong {
+      color: #e5edf8;
+    }
+
+    .ctx-menu {
+      position: fixed;
+      z-index: 1000;
+      min-width: 180px;
+      display: none;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #111827;
+      box-shadow: 0 18px 42px var(--shadow);
+      user-select: none;
+    }
+
+    .ctx-item {
+      min-height: 30px;
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      border-radius: 6px;
+      padding: 0 8px;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .ctx-item:hover {
+      color: #93c5fd;
+      background: #1e293b;
+    }
+
+    .ctx-item.danger {
+      color: var(--red);
+    }
+
+    .ctx-item.disabled {
+      color: #475569;
+      pointer-events: none;
+    }
+
+    .ctx-icon {
+      color: currentColor;
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .ctx-sep {
+      height: 1px;
+      margin: 5px 4px;
+      background: var(--line);
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        max-height: 260px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .top-grids {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-card + .grid-card {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .path-lab-head,
+      .path-lab-body {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="brand">SpanGrid Meta Management <span id="version">v0.1.1</span></div>
+      </div>
+      <nav class="example-links" aria-label="Example links">
+        <a href="index.html">Grid Editor</a>
+        <a href="query-analyzer.html">Query</a>
+        <a href="spreadsheet.html">Sheet</a>
+        <a href="showcase.html">Showcase</a>
+      </nav>
+      <div id="tree" class="tree"></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="title">
+          <strong id="selectedTitle">Meta Management</strong>
+          <span id="selectedPath">Select a tree node to inspect templates, attributes, and instances.</span>
+        </div>
+        <div class="actions">
+          <button id="resetSample" type="button">Reset Sample</button>
+          <button id="saveAll" class="primary" type="button">Save All</button>
+        </div>
+      </header>
+      <div id="status" class="status">Local sample store ready.</div>
+
+      <section class="path-lab" aria-label="Path Lab">
+        <div class="path-lab-head">
+          <span class="path-lab-title">Path Lab</span>
+          <input id="pathInput" class="path-input" type="text" value="Metabase.Apps.OlivePick.ApiMapping" spellcheck="false" aria-label="Meta path">
+          <button id="pathGetUID" type="button">UID</button>
+          <button id="pathGetRow" type="button">Row</button>
+          <button id="pathGetRows" type="button">Rows</button>
+          <button id="pathGetValues" type="button">Values</button>
+          <button id="pathSetCode" class="green" type="button">Set Code</button>
+        </div>
+        <div class="path-lab-body">
+          <textarea id="setCodeItems" class="path-items" spellcheck="false" aria-label="setCode items">[
+  { "code": "/api/auth/login", "name": "Login", "value": "login.xcon", "formorder": "101" },
+  { "code": "/api/auth/logout", "name": "Logout", "value": "logout.xcon", "formorder": "102" },
+  { "code": "/api/auth/register", "name": "Register", "value": "register.xcon", "formorder": "103" }
+]</textarea>
+          <pre id="pathResult" class="path-result" aria-live="polite">{}</pre>
+        </div>
+      </section>
+
+      <section class="grid-area">
+        <div class="top-grids">
+          <section class="grid-card">
+            <div class="grid-head">
+              <span class="grid-title">TEMPLATES</span>
+              <span id="tplCount" class="count">0 rows</span>
+              <span class="spacer"></span>
+              <button id="tplAdd" class="green" type="button">New Row</button>
+              <button id="tplSave" type="button">Save</button>
+            </div>
+            <div class="grid-shell">
+              <canvas id="tplCanvas" width="720" height="260"></canvas>
+              <input id="tplVScroll" class="scroll-y" type="range" min="0" max="0" value="0" aria-label="Templates vertical scroll">
+              <input id="tplHScroll" class="scroll-x" type="range" min="0" max="0" value="0" aria-label="Templates horizontal scroll">
+              <div class="corner"></div>
+            </div>
+          </section>
+
+          <section class="grid-card">
+            <div class="grid-head">
+              <span class="grid-title">ATTRIBUTES</span>
+              <span id="attrCount" class="count">0 rows</span>
+              <span class="spacer"></span>
+              <button id="attrAdd" class="green" type="button">New Row</button>
+              <button id="attrSave" type="button">Save</button>
+            </div>
+            <div class="grid-shell">
+              <canvas id="attrCanvas" width="720" height="260"></canvas>
+              <input id="attrVScroll" class="scroll-y" type="range" min="0" max="0" value="0" aria-label="Attributes vertical scroll">
+              <input id="attrHScroll" class="scroll-x" type="range" min="0" max="0" value="0" aria-label="Attributes horizontal scroll">
+              <div class="corner"></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="grid-card">
+          <div class="grid-head">
+            <span class="grid-title">INSTANCES</span>
+            <span id="instCount" class="count">0 rows</span>
+            <span class="spacer"></span>
+            <button id="instAdd" class="green" type="button">New Row</button>
+            <button id="instSave" type="button">Save</button>
+          </div>
+          <div class="grid-shell">
+            <canvas id="instCanvas" width="1440" height="310"></canvas>
+            <input id="instVScroll" class="scroll-y" type="range" min="0" max="0" value="0" aria-label="Instances vertical scroll">
+            <input id="instHScroll" class="scroll-x" type="range" min="0" max="0" value="0" aria-label="Instances horizontal scroll">
+            <div class="corner"></div>
+          </div>
+        </section>
+      </section>
+
+      <footer class="foot">
+        <span>Selected path <strong id="footPath">Root</strong></span>
+        <span>Pending changes <strong id="pendingCount">0</strong></span>
+      </footer>
+    </main>
+  </div>
+
+  <div id="contextMenu" class="ctx-menu" role="menu"></div>
+
+  <script src="../../packages/spangrid/src/span-grid.js"></script>
+  <script>
+    const {
+      VERSION,
+      BorderDirection,
+      SpanGridBorder,
+      SpanGridCanvasView,
+      SpanGridCol,
+      SpanGridControl,
+      SpanGridFixed,
+      SpanGridRow,
+    } = window.SpanGrid;
+
+    const META_TREE = [
+      {
+        UID: 1, PID: 0, PCODE: "ROOT", CODE: "CodeMgmt", NAME: "Code Management", TYPE: "GROUP", FORMORDER: "100", USE_YN: "Y", ACODE: "CodeMgmt", expanded: true,
+        children: [
+          { UID: 11, PID: 1, PCODE: "CodeMgmt", CODE: "Product", NAME: "Product Meta", TYPE: "GROUP", FORMORDER: "110", USE_YN: "Y", AID: 201, ACODE: "Product", expanded: true, children: [] },
+          { UID: 12, PID: 1, PCODE: "CodeMgmt", CODE: "Workflow", NAME: "Workflow Meta", TYPE: "GROUP", FORMORDER: "120", USE_YN: "Y", AID: 202, ACODE: "Workflow", expanded: false, children: [] },
+          { UID: 13, PID: 1, PCODE: "CodeMgmt", CODE: "Component", NAME: "Component Meta", TYPE: "GROUP", FORMORDER: "130", USE_YN: "Y", AID: 203, ACODE: "Component", expanded: false, children: [] },
+        ],
+      },
+      {
+        UID: 2, PID: 0, PCODE: "ROOT", CODE: "Apps", NAME: "Application Metabase", TYPE: "GROUP", FORMORDER: "200", USE_YN: "Y", ACODE: "Apps", expanded: true,
+        children: [
+          {
+            UID: 21, PID: 2, PCODE: "Apps", CODE: "OlivePick", NAME: "OlivePick", TYPE: "GROUP", FORMORDER: "210", USE_YN: "Y", AID: 301, ACODE: "OlivePick", expanded: true,
+            children: [
+              { UID: 211, PID: 21, PCODE: "OlivePick", CODE: "ApiMapping", NAME: "API Mapping", TYPE: "GROUP", FORMORDER: "211", USE_YN: "Y", AID: 302, ACODE: "ApiMapping", expanded: true, children: [] },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const SAMPLE_META_STORE = {
+      attributes: {
+        CodeMgmt: [
+          { UID: 301, PID: 1, PCODE: "CodeMgmt", SHOW_YN: "Y", CODE: "CODE", NAME: "Code", FORMORDER: "10", USE_YN: "Y" },
+          { UID: 302, PID: 1, PCODE: "CodeMgmt", SHOW_YN: "Y", CODE: "NAME", NAME: "Name", FORMORDER: "20", USE_YN: "Y" },
+          { UID: 303, PID: 1, PCODE: "CodeMgmt", SHOW_YN: "Y", CODE: "TYPE", NAME: "Type", FORMORDER: "30", USE_YN: "Y" },
+          { UID: 304, PID: 1, PCODE: "CodeMgmt", SHOW_YN: "N", CODE: "DESCRIPTION", NAME: "Description", FORMORDER: "40", USE_YN: "Y" },
+        ],
+        Product: [
+          { UID: 401, PID: 201, PCODE: "Product", SHOW_YN: "Y", CODE: "SKU", NAME: "SKU", FORMORDER: "10", USE_YN: "Y" },
+          { UID: 402, PID: 201, PCODE: "Product", SHOW_YN: "Y", CODE: "TITLE", NAME: "Title", FORMORDER: "20", USE_YN: "Y" },
+          { UID: 403, PID: 201, PCODE: "Product", SHOW_YN: "Y", CODE: "CATEGORY", NAME: "Category", FORMORDER: "30", USE_YN: "Y" },
+          { UID: 404, PID: 201, PCODE: "Product", SHOW_YN: "Y", CODE: "ACTIVE_YN", NAME: "Active", FORMORDER: "40", USE_YN: "Y" },
+          { UID: 405, PID: 201, PCODE: "Product", SHOW_YN: "N", CODE: "OWNER", NAME: "Owner", FORMORDER: "50", USE_YN: "Y" },
+        ],
+        Workflow: [
+          { UID: 501, PID: 202, PCODE: "Workflow", SHOW_YN: "Y", CODE: "STEP", NAME: "Step", FORMORDER: "10", USE_YN: "Y" },
+          { UID: 502, PID: 202, PCODE: "Workflow", SHOW_YN: "Y", CODE: "ROLE", NAME: "Role", FORMORDER: "20", USE_YN: "Y" },
+          { UID: 503, PID: 202, PCODE: "Workflow", SHOW_YN: "Y", CODE: "SLA_HOURS", NAME: "SLA Hours", FORMORDER: "30", USE_YN: "Y" },
+        ],
+        Component: [
+          { UID: 601, PID: 203, PCODE: "Component", SHOW_YN: "Y", CODE: "COMPONENT", NAME: "Component", FORMORDER: "10", USE_YN: "Y" },
+          { UID: 602, PID: 203, PCODE: "Component", SHOW_YN: "Y", CODE: "STATUS", NAME: "Status", FORMORDER: "20", USE_YN: "Y" },
+          { UID: 603, PID: 203, PCODE: "Component", SHOW_YN: "Y", CODE: "OWNER", NAME: "Owner", FORMORDER: "30", USE_YN: "Y" },
+        ],
+        Apps: [
+          { UID: 604, PID: 2, PCODE: "Apps", SHOW_YN: "Y", CODE: "CODE", NAME: "Code", FORMORDER: "10", USE_YN: "Y" },
+          { UID: 605, PID: 2, PCODE: "Apps", SHOW_YN: "Y", CODE: "NAME", NAME: "Name", FORMORDER: "20", USE_YN: "Y" },
+          { UID: 606, PID: 2, PCODE: "Apps", SHOW_YN: "Y", CODE: "TYPE", NAME: "Type", FORMORDER: "30", USE_YN: "Y" },
+        ],
+        OlivePick: [
+          { UID: 607, PID: 301, PCODE: "OlivePick", SHOW_YN: "Y", CODE: "CODE", NAME: "Code", FORMORDER: "10", USE_YN: "Y" },
+          { UID: 608, PID: 301, PCODE: "OlivePick", SHOW_YN: "Y", CODE: "NAME", NAME: "Name", FORMORDER: "20", USE_YN: "Y" },
+          { UID: 609, PID: 301, PCODE: "OlivePick", SHOW_YN: "Y", CODE: "TYPE", NAME: "Type", FORMORDER: "30", USE_YN: "Y" },
+        ],
+        ApiMapping: [
+          { UID: 610, PID: 302, PCODE: "ApiMapping", SHOW_YN: "Y", CODE: "CODE", NAME: "Route", FORMORDER: "10", USE_YN: "Y" },
+          { UID: 611, PID: 302, PCODE: "ApiMapping", SHOW_YN: "Y", CODE: "NAME", NAME: "Name", FORMORDER: "20", USE_YN: "Y" },
+          { UID: 612, PID: 302, PCODE: "ApiMapping", SHOW_YN: "Y", CODE: "VALUE", NAME: "Handler", FORMORDER: "30", USE_YN: "Y" },
+          { UID: 613, PID: 302, PCODE: "ApiMapping", SHOW_YN: "Y", CODE: "FORMORDER", NAME: "Order", FORMORDER: "40", USE_YN: "Y" },
+          { UID: 614, PID: 302, PCODE: "ApiMapping", SHOW_YN: "Y", CODE: "USE_YN", NAME: "Use", FORMORDER: "50", USE_YN: "Y" },
+        ],
+      },
+      instances: {
+        CodeMgmt: [
+          { UID: 701, PID: 1, PCODE: "CodeMgmt", CODE: "Product", NAME: "Product Meta", TYPE: "GROUP", SHOW_YN: "Y", USE_YN: "Y", DEL_YN: "N" },
+          { UID: 702, PID: 1, PCODE: "CodeMgmt", CODE: "Workflow", NAME: "Workflow Meta", TYPE: "GROUP", SHOW_YN: "Y", USE_YN: "Y", DEL_YN: "N" },
+          { UID: 703, PID: 1, PCODE: "CodeMgmt", CODE: "Component", NAME: "Component Meta", TYPE: "GROUP", SHOW_YN: "Y", USE_YN: "Y", DEL_YN: "N" },
+        ],
+        Product: [
+          { RID: "P-100", SKU: "SG-100", TITLE: "Grid Runtime", CATEGORY: "Software", ACTIVE_YN: "Y", OWNER: "Avery" },
+          { RID: "P-210", SKU: "SG-210", TITLE: "Canvas Renderer", CATEGORY: "Software", ACTIVE_YN: "Y", OWNER: "Mina" },
+          { RID: "KIT-24", SKU: "KIT-24", TITLE: "Operator Kit", CATEGORY: "Hardware", ACTIVE_YN: "N", OWNER: "Noah" },
+        ],
+        Workflow: [
+          { RID: "WF-1", STEP: "Draft", ROLE: "Author", SLA_HOURS: "8" },
+          { RID: "WF-2", STEP: "Review", ROLE: "Approver", SLA_HOURS: "24" },
+          { RID: "WF-3", STEP: "Publish", ROLE: "Release", SLA_HOURS: "4" },
+        ],
+        Component: [
+          { RID: "C-1", COMPONENT: "Button", STATUS: "Stable", OWNER: "Design System" },
+          { RID: "C-2", COMPONENT: "DataGrid", STATUS: "Preview", OWNER: "Platform" },
+          { RID: "C-3", COMPONENT: "Inspector", STATUS: "Draft", OWNER: "Tools" },
+        ],
+        Apps: [
+          { UID: 801, PID: 2, PCODE: "Apps", CODE: "OlivePick", NAME: "OlivePick", TYPE: "GROUP", VALUE: "", FORMORDER: "210", USE_YN: "Y", DEL_YN: "N" },
+        ],
+        OlivePick: [
+          { UID: 811, PID: 21, PCODE: "OlivePick", CODE: "ApiMapping", NAME: "API Mapping", TYPE: "GROUP", VALUE: "", FORMORDER: "211", USE_YN: "Y", DEL_YN: "N" },
+        ],
+        ApiMapping: [
+          { UID: 901, PID: 211, PCODE: "ApiMapping", CODE: "/api/auth/login", NAME: "Login", VALUE: "login.xcon", TYPE: "CODE", FORMORDER: "101", USE_YN: "Y", DEL_YN: "N" },
+          { UID: 902, PID: 211, PCODE: "ApiMapping", CODE: "/api/auth/logout", NAME: "Logout", VALUE: "logout.xcon", TYPE: "CODE", FORMORDER: "102", USE_YN: "Y", DEL_YN: "N" },
+          { UID: 903, PID: 211, PCODE: "ApiMapping", CODE: "/api/auth/register", NAME: "Register", VALUE: "register.xcon", TYPE: "CODE", FORMORDER: "103", USE_YN: "Y", DEL_YN: "N" },
+        ],
+      },
+    };
+
+    const INITIAL_META_STORE = JSON.parse(JSON.stringify(SAMPLE_META_STORE));
+
+    const META_CONTEXT_MENU_DEF = [
+      { id: "add", label: "New Row", icon: "+" },
+      { id: "duplicate", label: "Duplicate Row", icon: "D" },
+      { id: "delete", label: "Delete Row", icon: "X", danger: true },
+      { sep: true },
+      { id: "toggle", label: "Toggle Use/Show", icon: "Y" },
+      { id: "save", label: "Save Grid", icon: "S" },
+      { id: "autoFit", label: "Auto Fit Columns", icon: "W" },
+    ];
+
+    const TPL_COLS = [
+      { key: "UID", label: "UID", width: 46, type: "ro" },
+      { key: "PID", label: "PID", width: 46, type: "ro" },
+      { key: "PCODE", label: "PCODE", width: 90, type: "text" },
+      { key: "CODE", label: "CODE", width: 110, type: "text" },
+      { key: "NAME", label: "NAME", width: 150, type: "text" },
+      { key: "TYPE", label: "TYPE", width: 72, type: "text" },
+      { key: "FORMORDER", label: "ORDER", width: 80, type: "text" },
+      { key: "USE_YN", label: "USE", width: 48, type: "chk" },
+      { key: "__del__", label: "DEL", width: 48, type: "del" },
+    ];
+
+    const ATTR_COLS = [
+      { key: "UID", label: "UID", width: 46, type: "ro" },
+      { key: "PID", label: "PID", width: 46, type: "ro" },
+      { key: "SHOW_YN", label: "SHOW", width: 54, type: "chk" },
+      { key: "CODE", label: "CODE", width: 120, type: "text" },
+      { key: "NAME", label: "NAME", width: 150, type: "text" },
+      { key: "FORMORDER", label: "ORDER", width: 80, type: "text" },
+      { key: "USE_YN", label: "USE", width: 48, type: "chk" },
+      { key: "__del__", label: "DEL", width: 48, type: "del" },
+    ];
+
+    const CHECKBOX_FIELDS = new Set(["SHOW_YN", "USE_YN", "DEL_YN", "ACTIVE_YN"]);
+    const READONLY_FIELDS = new Set(["UID", "PID", "RID"]);
+
+    const COLORS = {
+      hdrBg: "#1e3050",
+      hdrFg: "#93c5fd",
+      bgEven: "#1c2333",
+      bgOdd: "#1f2840",
+      fg: "#c8d3e0",
+      selected: "#1e3a6e",
+      newRow: "#0f2e14",
+      modified: "#2e2410",
+      readOnly: "#7b8797",
+      yes: "#60a5fa",
+      no: "#475569",
+      delBg: "#3a1010",
+      delFg: "#f87171",
+      line: "#3b5070",
+    };
+
+    let nextRowId = 0;
+    let nextMetaUid = 10000;
+    function genRowId() {
+      nextRowId += 1;
+      return `r${Date.now()}_${nextRowId}`;
+    }
+
+    function deepClone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    const state = {
+      tree: deepClone(META_TREE),
+      selectedNode: null,
+      templates: [],
+      attributes: [],
+      instances: [],
+      selectedRows: { tpl: null, attr: null, inst: null },
+      changed: { tpl: new Set(), attr: new Set(), inst: new Set() },
+      deleted: { tpl: new Map(), attr: new Map(), inst: new Map() },
+      activeGrid: "tpl",
+      grids: {},
+    };
+
+    const dom = {
+      version: document.getElementById("version"),
+      tree: document.getElementById("tree"),
+      selectedTitle: document.getElementById("selectedTitle"),
+      selectedPath: document.getElementById("selectedPath"),
+      footPath: document.getElementById("footPath"),
+      pendingCount: document.getElementById("pendingCount"),
+      status: document.getElementById("status"),
+      contextMenu: document.getElementById("contextMenu"),
+      tplCount: document.getElementById("tplCount"),
+      attrCount: document.getElementById("attrCount"),
+      instCount: document.getElementById("instCount"),
+      tplAdd: document.getElementById("tplAdd"),
+      attrAdd: document.getElementById("attrAdd"),
+      instAdd: document.getElementById("instAdd"),
+      tplSave: document.getElementById("tplSave"),
+      attrSave: document.getElementById("attrSave"),
+      instSave: document.getElementById("instSave"),
+      resetSample: document.getElementById("resetSample"),
+      saveAll: document.getElementById("saveAll"),
+      pathInput: document.getElementById("pathInput"),
+      pathGetUID: document.getElementById("pathGetUID"),
+      pathGetRow: document.getElementById("pathGetRow"),
+      pathGetRows: document.getElementById("pathGetRows"),
+      pathGetValues: document.getElementById("pathGetValues"),
+      pathSetCode: document.getElementById("pathSetCode"),
+      setCodeItems: document.getElementById("setCodeItems"),
+      pathResult: document.getElementById("pathResult"),
+    };
+    dom.version.textContent = `v${VERSION}`;
+
+    function flattenTree(nodes, output = []) {
+      nodes.forEach((node) => {
+        output.push(node);
+        if (node.children) flattenTree(node.children, output);
+      });
+      return output;
+    }
+
+    function findNode(uid) {
+      return flattenTree(state.tree).find((node) => node.UID === uid) || null;
+    }
+
+    function nodePath(node) {
+      if (!node) return "Root";
+      const nodes = flattenTree(state.tree);
+      const parts = [];
+      let cur = node;
+      while (cur) {
+        parts.unshift(cur.CODE);
+        cur = nodes.find((item) => item.UID === cur.PID) || null;
+      }
+      return parts.join(".");
+    }
+
+    function pathFromNode(node) {
+      const path = nodePath(node);
+      return path === "Root" ? "Metabase" : `Metabase.${path}`;
+    }
+
+    function renderTree() {
+      dom.tree.replaceChildren();
+      function addNode(node, depth) {
+        const row = document.createElement("div");
+        row.className = `tree-row${state.selectedNode && state.selectedNode.UID === node.UID ? " selected" : ""}`;
+        row.style.paddingLeft = `${10 + depth * 14}px`;
+        row.dataset.uid = String(node.UID);
+
+        const toggle = document.createElement("span");
+        toggle.className = "tree-toggle";
+        toggle.textContent = node.children && node.children.length ? (node.expanded ? "v" : ">") : "";
+        row.appendChild(toggle);
+
+        const code = document.createElement("span");
+        code.className = "tree-code";
+        code.textContent = node.CODE;
+        row.appendChild(code);
+
+        const name = document.createElement("span");
+        name.className = "tree-name";
+        name.textContent = node.NAME;
+        row.appendChild(name);
+
+        toggle.addEventListener("click", (event) => {
+          event.stopPropagation();
+          node.expanded = !node.expanded;
+          renderTree();
+        });
+        row.addEventListener("click", () => selectNode(node));
+        row.addEventListener("dblclick", () => {
+          if (node.children && node.children.length) {
+            node.expanded = !node.expanded;
+            renderTree();
+          }
+        });
+        dom.tree.appendChild(row);
+        if (node.expanded && node.children) node.children.forEach((child) => addNode(child, depth + 1));
+      }
+      state.tree.forEach((node) => addNode(node, 0));
+    }
+
+    function withRowId(row) {
+      return { ...row, _rowId: genRowId(), _isNew: false, _isModified: false };
+    }
+
+    function selectedAttrCode(node) {
+      return node && node.ACODE ? node.ACODE : "CodeMgmt";
+    }
+
+    function metaStoreKey(node) {
+      return node && (node.ACODE || node.CODE) ? (node.ACODE || node.CODE) : "CodeMgmt";
+    }
+
+    function normalizeMetaPath(path) {
+      const source = String(path || "").trim();
+      const trimmed = source.startsWith("Metabase.") ? source.slice("Metabase.".length) : source;
+      return trimmed.split(".").map((part) => part.trim()).filter(Boolean);
+    }
+
+    function activeCodeRows(node) {
+      if (!node) return [];
+      const rows = SAMPLE_META_STORE.instances[metaStoreKey(node)] || [];
+      return rows.filter((row) => row.USE_YN !== "N" && row.DEL_YN !== "Y");
+    }
+
+    function findPathNode(parts) {
+      if (parts.length === 0) return null;
+      let level = state.tree;
+      let found = null;
+      for (const part of parts) {
+        found = level.find((node) => node.CODE === part && node.USE_YN !== "N") || null;
+        if (!found) return null;
+        level = found.children || [];
+      }
+      return found;
+    }
+
+    function allocateUid() {
+      const treeMax = flattenTree(state.tree).reduce((max, node) => Math.max(max, Number(node.UID || 0)), 0);
+      const attrMax = Object.values(SAMPLE_META_STORE.attributes).flat().reduce((max, row) => Math.max(max, Number(row.UID || 0)), 0);
+      const instMax = Object.values(SAMPLE_META_STORE.instances).flat().reduce((max, row) => Math.max(max, Number(row.UID || 0)), 0);
+      nextMetaUid = Math.max(nextMetaUid + 1, treeMax + 1, attrMax + 1, instMax + 1);
+      return nextMetaUid;
+    }
+
+    function ensurePathNode(parts) {
+      let level = state.tree;
+      let parent = null;
+      let found = null;
+      parts.forEach((part, index) => {
+        found = level.find((node) => node.CODE === part) || null;
+        if (!found) {
+          found = {
+            UID: allocateUid(),
+            PID: parent ? parent.UID : 0,
+            PCODE: parent ? parent.CODE : "ROOT",
+            CODE: part,
+            NAME: part,
+            TYPE: "GROUP",
+            FORMORDER: String((index + 1) * 100),
+            USE_YN: "Y",
+            AID: allocateUid() + 1000,
+            ACODE: part,
+            expanded: true,
+            children: [],
+          };
+          level.push(found);
+          if (parent) parent.expanded = true;
+        }
+        parent = found;
+        level = found.children || (found.children = []);
+      });
+      return found;
+    }
+
+    function getCodeUIDByPath(path) {
+      const node = findPathNode(normalizeMetaPath(path));
+      return node ? node.UID : -1;
+    }
+
+    function getCodeRowByPath(path) {
+      const node = findPathNode(normalizeMetaPath(path));
+      if (!node || node.USE_YN === "N") return {};
+      return { ...node, children: undefined };
+    }
+
+    function getCodeRowsByPath(path) {
+      const node = findPathNode(normalizeMetaPath(path));
+      const rows = {};
+      activeCodeRows(node).forEach((row) => {
+        rows[row.CODE] = { ...row };
+      });
+      return rows;
+    }
+
+    function getCodeValuesByPath(path, name = null) {
+      const rows = getCodeRowsByPath(path);
+      return Object.fromEntries(Object.entries(rows).map(([code, row]) => {
+        const field = name || "VALUE";
+        return [code, row[field] == null ? "" : row[field]];
+      }));
+    }
+
+    function ensurePathAttributes(node) {
+      const key = metaStoreKey(node);
+      if (SAMPLE_META_STORE.attributes[key]) return;
+      SAMPLE_META_STORE.attributes[key] = [
+        { UID: allocateUid(), PID: node.AID || node.UID, PCODE: node.CODE, SHOW_YN: "Y", CODE: "CODE", NAME: "Code", FORMORDER: "10", USE_YN: "Y" },
+        { UID: allocateUid(), PID: node.AID || node.UID, PCODE: node.CODE, SHOW_YN: "Y", CODE: "NAME", NAME: "Name", FORMORDER: "20", USE_YN: "Y" },
+        { UID: allocateUid(), PID: node.AID || node.UID, PCODE: node.CODE, SHOW_YN: "Y", CODE: "VALUE", NAME: "Value", FORMORDER: "30", USE_YN: "Y" },
+        { UID: allocateUid(), PID: node.AID || node.UID, PCODE: node.CODE, SHOW_YN: "Y", CODE: "FORMORDER", NAME: "Order", FORMORDER: "40", USE_YN: "Y" },
+        { UID: allocateUid(), PID: node.AID || node.UID, PCODE: node.CODE, SHOW_YN: "Y", CODE: "USE_YN", NAME: "Use", FORMORDER: "50", USE_YN: "Y" },
+      ];
+    }
+
+    function codeItemToRow(item, node, existingRow = null) {
+      return {
+        ...(existingRow || {}),
+        UID: existingRow?.UID || item.uid || item.UID || allocateUid(),
+        PID: node.UID,
+        PCODE: node.CODE,
+        CODE: item.code || item.CODE || "",
+        NAME: item.name || item.NAME || "",
+        VALUE: item.value || item.VALUE || "",
+        TYPE: item.type || item.TYPE || "CODE",
+        FORMORDER: item.formorder || item.FORMORDER || "",
+        DESCRIPTION: item.description || item.DESCRIPTION || "",
+        SHOW_YN: item.show_yn || item.SHOW_YN || "Y",
+        USE_YN: item.use_yn || item.USE_YN || "Y",
+        DEL_YN: item._deleted ? "Y" : item.del_yn || item.DEL_YN || "N",
+      };
+    }
+
+    function setCodeByPath(path, items) {
+      const parts = normalizeMetaPath(path);
+      if (parts.length === 0) return [];
+      const node = ensurePathNode(parts);
+      ensurePathAttributes(node);
+      const key = metaStoreKey(node);
+      const existingRows = SAMPLE_META_STORE.instances[key] || [];
+      const rowsByCode = new Map(existingRows.map((row) => [row.CODE, row]));
+      items.forEach((item) => {
+        const code = item.code || item.CODE;
+        if (!code) return;
+        const existingRow = rowsByCode.get(code) || null;
+        rowsByCode.set(code, codeItemToRow(item, node, existingRow));
+      });
+      SAMPLE_META_STORE.instances[key] = [...rowsByCode.values()].sort((a, b) => Number(a.FORMORDER || 0) - Number(b.FORMORDER || 0));
+      syncMetaFromCodePath(path);
+      return activeCodeRows(node).map((row) => ({ ...row }));
+    }
+
+    function syncMetaFromCodePath(path) {
+      const node = findPathNode(normalizeMetaPath(path));
+      if (!node) return;
+      selectNode(node);
+    }
+
+    function renderPathResult(action, data) {
+      dom.pathResult.textContent = JSON.stringify({ action, data }, null, 2);
+    }
+
+    function readSetCodeItems() {
+      const parsed = JSON.parse(dom.setCodeItems.value);
+      if (!Array.isArray(parsed)) throw new Error("setCode items must be a JSON array.");
+      return parsed;
+    }
+
+    function runPathAction(action) {
+      const path = dom.pathInput.value;
+      try {
+        if (action === "uid") renderPathResult("getCodeUID", getCodeUIDByPath(path));
+        if (action === "row") renderPathResult("getCodeRow", getCodeRowByPath(path));
+        if (action === "rows") renderPathResult("getCodeRows", getCodeRowsByPath(path));
+        if (action === "values") renderPathResult("getCodeValues", getCodeValuesByPath(path));
+        if (action === "set") renderPathResult("setCode", setCodeByPath(path, readSetCodeItems()));
+        showStatus(`Path ${action} completed.`, "ok");
+      } catch (error) {
+        renderPathResult("error", { message: error.message });
+        showStatus(error.message, "warn");
+      }
+    }
+
+    function loadNodeData(node) {
+      const children = (node.children || []).map((child) => ({
+        UID: child.UID,
+        PID: child.PID,
+        PCODE: child.PCODE,
+        CODE: child.CODE,
+        NAME: child.NAME,
+        TYPE: child.TYPE,
+        FORMORDER: child.FORMORDER,
+        USE_YN: child.USE_YN,
+      }));
+      state.templates = [withRowId({
+        UID: node.UID,
+        PID: node.PID,
+        PCODE: node.PCODE,
+        CODE: node.CODE,
+        NAME: node.NAME,
+        TYPE: node.TYPE,
+        FORMORDER: node.FORMORDER,
+        USE_YN: node.USE_YN,
+      }), ...children.map(withRowId)];
+
+      const attrCode = metaStoreKey(node);
+      state.attributes = (SAMPLE_META_STORE.attributes[attrCode] || SAMPLE_META_STORE.attributes.CodeMgmt).map(withRowId);
+      state.instances = (SAMPLE_META_STORE.instances[attrCode] || []).map(withRowId);
+
+      state.selectedRows = { tpl: null, attr: null, inst: null };
+      state.changed = { tpl: new Set(), attr: new Set(), inst: new Set() };
+      state.deleted = { tpl: new Map(), attr: new Map(), inst: new Map() };
+      renderAllGrids();
+      showStatus(`Loaded ${node.CODE}.`, "ok");
+    }
+
+    function selectNode(node) {
+      state.selectedNode = node;
+      dom.selectedTitle.textContent = `${node.NAME} (${node.CODE})`;
+      dom.selectedPath.textContent = nodePath(node);
+      dom.footPath.textContent = nodePath(node);
+      dom.pathInput.value = pathFromNode(node);
+      renderPathResult("getCodeRows", getCodeRowsByPath(dom.pathInput.value));
+      renderTree();
+      loadNodeData(node);
+    }
+
+    function showStatus(message, tone = "") {
+      dom.status.textContent = message;
+      dom.status.className = `status ${tone}`.trim();
+    }
+
+    function pendingCount() {
+      return state.changed.tpl.size + state.changed.attr.size + state.changed.inst.size +
+        state.deleted.tpl.size + state.deleted.attr.size + state.deleted.inst.size;
+    }
+
+    function updateCounts() {
+      dom.tplCount.textContent = `${state.templates.length} rows`;
+      dom.attrCount.textContent = `${state.attributes.length} rows`;
+      dom.instCount.textContent = `${state.instances.length} rows`;
+      dom.pendingCount.textContent = String(pendingCount());
+    }
+
+    function instColumns() {
+      const attrs = state.attributes
+        .filter((row) => row.SHOW_YN === "Y")
+        .sort((a, b) => Number(a.FORMORDER || 0) - Number(b.FORMORDER || 0));
+      const cols = attrs.map((row) => ({
+        key: row.CODE,
+        label: row.NAME || row.CODE,
+        width: instColWidth(row.CODE),
+        type: CHECKBOX_FIELDS.has(row.CODE) ? "chk" : READONLY_FIELDS.has(row.CODE) ? "ro" : "text",
+      }));
+      return [{ key: "RID", label: "RID", width: 88, type: "ro" }, ...cols, { key: "__del__", label: "DEL", width: 48, type: "del" }];
+    }
+
+    function instColWidth(field) {
+      if (field === "RID") return 88;
+      if (field.endsWith("_YN")) return 54;
+      if (field === "SLA_HOURS") return 80;
+      if (field === "TITLE" || field === "COMPONENT") return 150;
+      return 110;
+    }
+
+    function rowsForGrid(gridName) {
+      if (gridName === "tpl") return state.templates;
+      if (gridName === "attr") return state.attributes;
+      return state.instances;
+    }
+
+    function columnsForGrid(gridName) {
+      if (gridName === "tpl") return TPL_COLS;
+      if (gridName === "attr") return ATTR_COLS;
+      return instColumns();
+    }
+
+    function createMetaGrid(gridName, ids) {
+      const canvas = document.getElementById(ids.canvas);
+      const shell = canvas.parentElement;
+      const grid = new SpanGridControl({
+        width: Math.max(360, shell.clientWidth - 16),
+        height: Math.max(180, shell.clientHeight - 24),
+        backColor: COLORS.bgEven,
+        borderStyle: "None",
+        lineColor: "#2d3f52",
+        lineWidth: 1,
+        focusColor: "#6366f1",
+      });
+      const view = new SpanGridCanvasView(canvas, grid, {
+        hScroll: document.getElementById(ids.hScroll),
+        vScroll: document.getElementById(ids.vScroll),
+        pasteOverflow: "truncate",
+      });
+
+      const originalCommitCellEdit = view.commitCellEdit.bind(view);
+      view.commitCellEdit = (moveAction) => {
+        const cell = view.editingCell;
+        const result = originalCommitCellEdit(moveAction);
+        if (result && cell && cell.tag && cell.tag.type === "text") {
+          editCell(gridName, cell.tag.rowId, cell.tag.key, cell.text);
+        }
+        return result;
+      };
+
+      grid.onSelectionChange(() => {
+        const cell = grid.selectedCell || grid.selectedCells[0];
+        if (cell && cell.tag && cell.tag.rowId) {
+          state.selectedRows[gridName] = cell.tag.rowId;
+          state.activeGrid = gridName;
+          renderAllGrids();
+        }
+      });
+
+      grid.onCellClick(({ cell }) => {
+        if (!cell || !cell.tag) return;
+        state.activeGrid = gridName;
+        if (cell.tag.type === "chk") toggleCell(gridName, cell.tag.rowId, cell.tag.key);
+        if (cell.tag.type === "del") deleteRow(gridName, cell.tag.rowId);
+      });
+
+      canvas.addEventListener("contextmenu", () => {
+        state.activeGrid = gridName;
+      }, true);
+
+      const resizeObserver = new ResizeObserver(() => {
+        grid.width = Math.max(360, shell.clientWidth - 16);
+        grid.height = Math.max(180, shell.clientHeight - 24);
+        grid.layout();
+        view.resize();
+        view.draw();
+      });
+      resizeObserver.observe(shell);
+
+      state.grids[gridName] = { grid, view };
+    }
+
+    function renderGrid(gridName) {
+      const handle = state.grids[gridName];
+      if (!handle) return;
+      const { grid, view } = handle;
+      const columns = columnsForGrid(gridName);
+      const rows = rowsForGrid(gridName);
+      grid.rows = [];
+      grid.cols = [];
+      grid.merges = [];
+      grid.selectedObjects = [];
+      grid.fixed = new SpanGridFixed();
+
+      columns.forEach((col) => grid.addCol(new SpanGridCol({ width: col.width })));
+      grid.addRow(new SpanGridRow({ height: 28 }));
+      columns.forEach((col, colIndex) => {
+        const cell = grid.getCell(0, colIndex);
+        cell.text = col.label;
+        cell.backColor = COLORS.hdrBg;
+        cell.foreColor = COLORS.hdrFg;
+        cell.font = "bold 11px system-ui, sans-serif";
+        cell.textAlign = "MiddleCenter";
+        cell.tag = { type: "header", editable: false };
+      });
+
+      if (rows.length === 0) {
+        grid.addRow(new SpanGridRow({ height: 58 }));
+        const cell = grid.getCell(1, 0);
+        cell.text = "No rows";
+        cell.backColor = COLORS.bgEven;
+        cell.foreColor = COLORS.readOnly;
+        cell.textAlign = "MiddleCenter";
+        if (columns.length > 1) grid.mergeCells(1, 0, 1, columns.length - 1);
+      } else {
+        rows.forEach((row, rowIndex) => {
+          grid.addRow(new SpanGridRow({ height: 26 }));
+          const selected = state.selectedRows[gridName] === row._rowId;
+          const bg = selected ? COLORS.selected : row._isNew ? COLORS.newRow : row._isModified ? COLORS.modified : rowIndex % 2 === 0 ? COLORS.bgEven : COLORS.bgOdd;
+          columns.forEach((col, colIndex) => {
+            const cell = grid.getCell(rowIndex + 1, colIndex);
+            cell.backColor = bg;
+            if (col.type === "del") {
+              cell.text = "x";
+              cell.foreColor = COLORS.delFg;
+              cell.backColor = selected ? COLORS.selected : COLORS.delBg;
+              cell.font = "bold 11px system-ui, sans-serif";
+              cell.textAlign = "MiddleCenter";
+              cell.tag = { type: "del", editable: false, rowId: row._rowId };
+            } else if (col.type === "chk") {
+              const isYes = row[col.key] === "Y";
+              cell.text = isYes ? "Y" : "N";
+              cell.foreColor = isYes ? COLORS.yes : COLORS.no;
+              cell.font = "bold 12px system-ui, sans-serif";
+              cell.textAlign = "MiddleCenter";
+              cell.tag = { type: "chk", editable: false, rowId: row._rowId, key: col.key };
+            } else if (col.type === "ro") {
+              cell.text = String(row[col.key] ?? "");
+              cell.foreColor = COLORS.readOnly;
+              cell.font = "11px ui-monospace, SFMono-Regular, Consolas, monospace";
+              cell.textAlign = "MiddleLeft";
+              cell.tag = { type: "ro", editable: false, rowId: row._rowId, key: col.key };
+            } else {
+              cell.text = String(row[col.key] ?? "");
+              cell.foreColor = COLORS.fg;
+              cell.font = "11px system-ui, sans-serif";
+              cell.textAlign = "MiddleLeft";
+              cell.tag = { type: "text", editable: true, rowId: row._rowId, key: col.key };
+            }
+          });
+        });
+      }
+
+      grid.fixed = new SpanGridFixed(grid.rows[0], null);
+      const headerLine = new SpanGridBorder({ color: COLORS.line, borderDirection: BorderDirection.Bottom, lineWidth: 2 });
+      columns.forEach((_, colIndex) => {
+        const cell = grid.getCell(0, colIndex);
+        if (cell) cell.border = headerLine;
+      });
+      try {
+        const fixedCols = {};
+        columns.forEach((col, index) => {
+          if (col.type === "chk" || col.type === "del" || col.type === "ro") fixedCols[index] = col.width;
+        });
+        grid.autoFitCols({ padding: 20, minWidth: 38, maxWidth: 260, fill: true, fixedCols });
+      } catch (error) {
+        grid.layout();
+      }
+      view.resize();
+      view.draw();
+    }
+
+    function renderAllGrids() {
+      renderGrid("tpl");
+      renderGrid("attr");
+      renderGrid("inst");
+      updateCounts();
+    }
+
+    function markChanged(gridName, rowId) {
+      const row = rowsForGrid(gridName).find((item) => item._rowId === rowId);
+      if (!row) return;
+      if (!row._isNew) row._isModified = true;
+      state.changed[gridName].add(rowId);
+      updateCounts();
+    }
+
+    function editCell(gridName, rowId, key, value) {
+      const row = rowsForGrid(gridName).find((item) => item._rowId === rowId);
+      if (!row) return;
+      row[key] = value;
+      markChanged(gridName, rowId);
+      renderGrid(gridName);
+      showStatus(`Edited ${key}.`, "warn");
+    }
+
+    function toggleCell(gridName, rowId, key) {
+      const row = rowsForGrid(gridName).find((item) => item._rowId === rowId);
+      if (!row) return;
+      row[key] = row[key] === "Y" ? "N" : "Y";
+      markChanged(gridName, rowId);
+      renderGrid(gridName);
+      showStatus(`Toggled ${key}.`, "warn");
+    }
+
+    function newRowFor(gridName) {
+      const node = state.selectedNode || findNode(1);
+      if (gridName === "tpl") {
+        return { UID: 0, PID: node.UID, PCODE: node.CODE, CODE: "", NAME: "", TYPE: "GROUP", FORMORDER: "", USE_YN: "Y" };
+      }
+      if (gridName === "attr") {
+        return { UID: 0, PID: node.AID || node.UID, PCODE: selectedAttrCode(node), SHOW_YN: "Y", CODE: "", NAME: "", FORMORDER: "", USE_YN: "Y" };
+      }
+      const row = { RID: `NEW_${Date.now()}` };
+      columnsForGrid("inst").forEach((col) => {
+        if (col.key !== "RID" && col.key !== "__del__") row[col.key] = col.type === "chk" ? "Y" : "";
+      });
+      return row;
+    }
+
+    function addRow(gridName) {
+      const row = { ...newRowFor(gridName), _rowId: genRowId(), _isNew: true, _isModified: false };
+      rowsForGrid(gridName).push(row);
+      state.changed[gridName].add(row._rowId);
+      state.selectedRows[gridName] = row._rowId;
+      renderAllGrids();
+      showStatus(`Added row to ${gridName}.`, "warn");
+    }
+
+    function duplicateRow(gridName) {
+      const selected = state.selectedRows[gridName];
+      const source = rowsForGrid(gridName).find((row) => row._rowId === selected) || rowsForGrid(gridName)[0];
+      if (!source) return addRow(gridName);
+      const row = { ...source, UID: 0, _rowId: genRowId(), _isNew: true, _isModified: false };
+      if (row.RID) row.RID = `COPY_${Date.now()}`;
+      rowsForGrid(gridName).push(row);
+      state.changed[gridName].add(row._rowId);
+      state.selectedRows[gridName] = row._rowId;
+      renderAllGrids();
+      showStatus(`Duplicated row in ${gridName}.`, "warn");
+    }
+
+    function deleteRow(gridName, rowId = state.selectedRows[gridName]) {
+      if (!rowId) return;
+      const rows = rowsForGrid(gridName);
+      const index = rows.findIndex((row) => row._rowId === rowId);
+      if (index < 0) return;
+      const [row] = rows.splice(index, 1);
+      if (!row._isNew) state.deleted[gridName].set(rowId, row);
+      state.changed[gridName].delete(rowId);
+      state.selectedRows[gridName] = null;
+      renderAllGrids();
+      showStatus(`Deleted row from ${gridName}.`, "warn");
+    }
+
+    function toggleSelectedRow(gridName) {
+      const rowId = state.selectedRows[gridName];
+      if (!rowId) return;
+      const row = rowsForGrid(gridName).find((item) => item._rowId === rowId);
+      if (!row) return;
+      const key = Object.keys(row).find((field) => CHECKBOX_FIELDS.has(field));
+      if (key) toggleCell(gridName, rowId, key);
+    }
+
+    function saveGrid(gridName) {
+      rowsForGrid(gridName).forEach((row) => {
+        row._isNew = false;
+        row._isModified = false;
+      });
+      state.changed[gridName].clear();
+      state.deleted[gridName].clear();
+      renderAllGrids();
+      showStatus(`Saved ${gridName} grid to the local sample store.`, "ok");
+    }
+
+    function saveAll() {
+      saveGrid("tpl");
+      saveGrid("attr");
+      saveGrid("inst");
+      showStatus("Saved all local sample changes.", "ok");
+    }
+
+    function resetSample() {
+      nextRowId = 0;
+      nextMetaUid = 10000;
+      state.tree = deepClone(META_TREE);
+      Object.keys(SAMPLE_META_STORE).forEach((key) => delete SAMPLE_META_STORE[key]);
+      Object.assign(SAMPLE_META_STORE, deepClone(INITIAL_META_STORE));
+      selectNode(findNode(1));
+      renderPathResult("getCodeRows", getCodeRowsByPath(dom.pathInput.value));
+      showStatus("Sample reset.", "ok");
+    }
+
+    function autoFitGrid(gridName) {
+      const handle = state.grids[gridName];
+      if (!handle) return;
+      try {
+        handle.grid.autoFitCols({ padding: 20, minWidth: 38, maxWidth: 260, fill: true });
+      } catch (error) {
+        handle.grid.layout();
+      }
+      handle.view.resize();
+      handle.view.draw();
+    }
+
+    function buildContextMenu() {
+      dom.contextMenu.replaceChildren();
+      META_CONTEXT_MENU_DEF.forEach((item) => {
+        if (item.sep) {
+          const sep = document.createElement("div");
+          sep.className = "ctx-sep";
+          dom.contextMenu.appendChild(sep);
+          return;
+        }
+        const el = document.createElement("div");
+        el.className = `ctx-item${item.danger ? " danger" : ""}`;
+        el.dataset.command = item.id;
+        el.setAttribute("role", "menuitem");
+        const icon = document.createElement("span");
+        icon.className = "ctx-icon";
+        icon.textContent = item.icon;
+        el.appendChild(icon);
+        const label = document.createElement("span");
+        label.textContent = item.label;
+        el.appendChild(label);
+        dom.contextMenu.appendChild(el);
+      });
+    }
+
+    function hideContextMenu() {
+      dom.contextMenu.style.display = "none";
+      document.removeEventListener("mousedown", onDocumentMouseDown, true);
+      document.removeEventListener("keydown", onDocumentKeyDown, true);
+      document.removeEventListener("scroll", hideContextMenu, true);
+    }
+
+    function onDocumentMouseDown(event) {
+      if (!dom.contextMenu.contains(event.target)) hideContextMenu();
+    }
+
+    function onDocumentKeyDown(event) {
+      if (event.key === "Escape") hideContextMenu();
+    }
+
+    function showMetaContextMenu(x, y) {
+      const rowId = state.selectedRows[state.activeGrid];
+      dom.contextMenu.querySelectorAll(".ctx-item").forEach((item) => {
+        const needsRow = item.dataset.command === "duplicate" || item.dataset.command === "delete" || item.dataset.command === "toggle";
+        item.classList.toggle("disabled", needsRow && !rowId);
+      });
+      dom.contextMenu.style.left = "0px";
+      dom.contextMenu.style.top = "0px";
+      dom.contextMenu.style.display = "block";
+      const menuWidth = dom.contextMenu.offsetWidth;
+      const menuHeight = dom.contextMenu.offsetHeight;
+      dom.contextMenu.style.left = `${Math.min(x, window.innerWidth - menuWidth - 4)}px`;
+      dom.contextMenu.style.top = `${Math.min(y, window.innerHeight - menuHeight - 4)}px`;
+      setTimeout(() => {
+        document.addEventListener("mousedown", onDocumentMouseDown, true);
+        document.addEventListener("keydown", onDocumentKeyDown, true);
+        document.addEventListener("scroll", hideContextMenu, true);
+      }, 0);
+    }
+    window.showSgContextMenu = showMetaContextMenu;
+
+    const CONTEXT_COMMANDS = {
+      add: () => addRow(state.activeGrid),
+      duplicate: () => duplicateRow(state.activeGrid),
+      delete: () => deleteRow(state.activeGrid),
+      toggle: () => toggleSelectedRow(state.activeGrid),
+      save: () => saveGrid(state.activeGrid),
+      autoFit: () => autoFitGrid(state.activeGrid),
+    };
+
+    dom.contextMenu.addEventListener("click", (event) => {
+      const item = event.target.closest(".ctx-item");
+      if (!item || item.classList.contains("disabled")) return;
+      hideContextMenu();
+      const command = CONTEXT_COMMANDS[item.dataset.command];
+      if (command) command();
+    });
+
+    dom.tplAdd.addEventListener("click", () => addRow("tpl"));
+    dom.attrAdd.addEventListener("click", () => addRow("attr"));
+    dom.instAdd.addEventListener("click", () => addRow("inst"));
+    dom.tplSave.addEventListener("click", () => saveGrid("tpl"));
+    dom.attrSave.addEventListener("click", () => saveGrid("attr"));
+    dom.instSave.addEventListener("click", () => saveGrid("inst"));
+    dom.saveAll.addEventListener("click", saveAll);
+    dom.resetSample.addEventListener("click", resetSample);
+    dom.pathGetUID.addEventListener("click", () => runPathAction("uid"));
+    dom.pathGetRow.addEventListener("click", () => runPathAction("row"));
+    dom.pathGetRows.addEventListener("click", () => runPathAction("rows"));
+    dom.pathGetValues.addEventListener("click", () => runPathAction("values"));
+    dom.pathSetCode.addEventListener("click", () => runPathAction("set"));
+
+    createMetaGrid("tpl", { canvas: "tplCanvas", hScroll: "tplHScroll", vScroll: "tplVScroll" });
+    createMetaGrid("attr", { canvas: "attrCanvas", hScroll: "attrHScroll", vScroll: "attrVScroll" });
+    createMetaGrid("inst", { canvas: "instCanvas", hScroll: "instHScroll", vScroll: "instVScroll" });
+    buildContextMenu();
+    renderTree();
+    selectNode(findNode(1));
+    renderPathResult("getCodeRows", getCodeRowsByPath(dom.pathInput.value));
+  </script>
+</body>
+</html>

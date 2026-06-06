@@ -1,0 +1,59 @@
+{
+  "name": "@pomelo-suite/grideditor-figma",
+  "version": "1.0.0",
+  "description": "GridEditor Figma plugin powered by SpanGrid.",
+  "private": true,
+  "main": "code.js",
+  "scripts": {
+    "build": "esbuild code.ts --bundle --outfile=code.js --format=iife --platform=neutral --target=es2017",
+    "watch": "esbuild code.ts --bundle --outfile=code.js --format=iife --platform=neutral --target=es2017 --watch",
+    "build:wp": "webpack --config webpack.config.js",
+    "watch:wp": "webpack --config webpack.config.js --watch",
+    "extract:ui": "node scripts/extract-ui.js",
+    "build:ui": "node scripts/build-ui.js",
+    "watch:ui": "node scripts/build-ui.js --watch",
+    "build:all": "npm run build:wp && npm run build:ui",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint --ext .ts,.tsx --ignore-pattern node_modules .",
+    "lint:fix": "eslint --ext .ts,.tsx --ignore-pattern node_modules --fix ."
+  },
+  "author": "xamongmini",
+  "license": "MIT",
+  "devDependencies": {
+    "@figma/eslint-plugin-figma-plugins": "*",
+    "@figma/plugin-typings": "*",
+    "@types/node": "^22.5.1",
+    "@typescript-eslint/eslint-plugin": "^8.59.4",
+    "@typescript-eslint/parser": "^8.59.4",
+    "esbuild": "^0.25.0",
+    "eslint": "^8.57.1",
+    "terser": "^5.46.2",
+    "terser-webpack-plugin": "^5.5.0",
+    "ts-loader": "^9.5.7",
+    "typescript": "^5.3.2",
+    "webpack": "^5.106.2",
+    "webpack-cli": "^7.0.2"
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@figma/figma-plugins/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "root": true,
+    "rules": {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "caughtErrorsIgnorePattern": "^_"
+        }
+      ]
+    }
+  }
+}

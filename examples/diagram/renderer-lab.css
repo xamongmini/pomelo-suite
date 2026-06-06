@@ -1,0 +1,177 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #f5f7fb;
+  color: #172033;
+  font-family: Segoe UI, Arial, sans-serif;
+  overflow: hidden;
+}
+
+button {
+  border: 1px solid #b9c3d4;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #172033;
+  cursor: pointer;
+  font: inherit;
+  min-height: 34px;
+  padding: 0 13px;
+}
+
+button.primary {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #ffffff;
+}
+
+.topbar {
+  align-items: center;
+  background: #ffffff;
+  border-bottom: 1px solid #d6deeb;
+  display: flex;
+  gap: 24px;
+  height: 72px;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.topbar h1 {
+  font-size: 20px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.topbar p {
+  color: #66758d;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.workspace {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(360px, 440px) minmax(0, 1fr);
+  height: calc(100vh - 72px);
+  padding: 12px;
+}
+
+.panel {
+  background: #ffffff;
+  border: 1px solid #d6deeb;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel-title {
+  align-items: center;
+  border-bottom: 1px solid #d6deeb;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0 12px;
+}
+
+.panel-title h2 {
+  font-size: 14px;
+  margin: 0;
+}
+
+#sourceInput {
+  border: 0;
+  color: #162033;
+  flex: 1;
+  font: 13px Consolas, monospace;
+  line-height: 1.5;
+  min-height: 0;
+  outline: none;
+  padding: 12px;
+  resize: none;
+}
+
+#statusOutput {
+  background: #f3f6fb;
+  border-top: 1px solid #d6deeb;
+  color: #44536a;
+  font: 12px Consolas, monospace;
+  margin: 0;
+  min-height: 72px;
+  overflow: auto;
+  padding: 10px 12px;
+}
+
+.canvas-panel {
+  min-width: 0;
+}
+
+.editor-status {
+  align-items: center;
+  border-bottom: 1px solid #d6deeb;
+  color: #44536a;
+  display: flex;
+  font-size: 12px;
+  min-height: 32px;
+  padding: 0 12px;
+}
+
+#metricsLabel {
+  color: #66758d;
+  font-size: 12px;
+}
+
+#diagramCanvas {
+  cursor: default;
+  display: block;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+}
+
+#diagramCanvas.can-drag {
+  cursor: grab;
+}
+
+#diagramCanvas.dragging {
+  cursor: grabbing;
+}
+
+@media (max-width: 860px) {
+  body {
+    overflow: auto;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    height: auto;
+    padding: 14px;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .panel {
+    min-height: 420px;
+  }
+}

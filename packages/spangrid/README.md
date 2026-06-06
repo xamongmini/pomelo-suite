@@ -1,12 +1,10 @@
-# SpanGrid JavaScript v0.1.0
+# SpanGrid JavaScript v0.1.1
 
 SpanGrid is a vanilla JavaScript and HTML Canvas grid control for web applications. It has no build step or runtime dependency and can be loaded directly with a `<script>` tag.
 
 ## Included npm Files
 
-- `src/span-grid.js` - SpanGrid 0.1.0 library
-- `docs/API.md` - public API reference
-- `docs/USAGE.md` - usage examples
+- `src/span-grid.js` - SpanGrid 0.1.1 library
 - `README.md`
 - `LICENSE`
 
@@ -59,6 +57,10 @@ npm install @pomelo-suite/spangrid
 Open `examples/spangrid/index.html` from the repository root in a browser. It is static HTML and does not require a server.
 
 Use `examples/spangrid/showcase.html` to review richer presets and HTML cell rendering. These HTML files are repository examples and are not included in the npm package.
+
+## Repository Docs
+
+Detailed API and usage documents are kept in the repository under `docs/spangrid`. They are intentionally separate from the npm package payload.
 
 ## Tests
 

@@ -1,4 +1,4 @@
-# SpanGrid 0.1.0 Usage Examples
+# SpanGrid 0.1.1 Usage Examples
 
 ## 1. Basic Grid Rendering
 

@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const TARGETS = ['packages', 'tests', 'scripts'];
+const TARGETS = ['packages', 'figma-plugins', 'examples', 'tests', 'scripts'];
 
 function walk(directory, files = []) {
   if (!fs.existsSync(directory)) return files;

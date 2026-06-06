@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+@@CSS@@
+</style>
+</head>
+<body class="phase-onboarding">
+
+<div id="onboarding-root" class="onboarding-root" role="main" aria-label="Table Creator - Start">
+  <div class="ob-scroll">
+    
+    <div class="ob-state-header" id="ob-state-header" data-i18n="ob_state_no_sel">SELECT FRAME</div>
+
+    
+    <div class="ob-illus-wrap">
+      <div class="ob-illus-circle" id="ob-illus-circle" aria-hidden="true">
+        
+        <svg id="ob-illus-empty" width="148" height="126" viewBox="0 0 148 126" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="14" width="108" height="98" rx="7" fill="#ffffff" stroke="#C8CBD4" stroke-width="1.5" stroke-dasharray="5 3"/>
+          <circle cx="33" cy="26" r="3.5" fill="#F5A623"/>
+          <circle cx="44" cy="26" r="3.5" fill="#7ED321"/>
+          <circle cx="55" cy="26" r="3.5" fill="#60A5FA"/>
+          <rect x="13" y="7" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+          <rect x="126" y="7" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+          <rect x="13" y="110" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+          <rect x="126" y="110" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+          <rect x="13" y="57" width="9" height="9" rx="2.5" fill="#C8CBD4"/>
+          <rect x="126" y="57" width="9" height="9" rx="2.5" fill="#C8CBD4"/>
+        </svg>
+        
+        <svg id="ob-illus-selected" width="148" height="126" viewBox="0 0 148 126" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none">
+          <rect x="20" y="14" width="108" height="98" rx="7" fill="#ffffff" stroke="#60A5FA" stroke-width="2"/>
+          <circle cx="33" cy="26" r="3.5" fill="#F5A623"/>
+          <circle cx="44" cy="26" r="3.5" fill="#7ED321"/>
+          <circle cx="55" cy="26" r="3.5" fill="#60A5FA"/>
+          <line x1="20" y1="37" x2="128" y2="37" stroke="#E0E3EA" stroke-width="1"/>
+          <line x1="20" y1="60" x2="128" y2="60" stroke="#E0E3EA" stroke-width="1"/>
+          <line x1="20" y1="83" x2="128" y2="83" stroke="#E0E3EA" stroke-width="1"/>
+          <line x1="56" y1="37" x2="56" y2="112" stroke="#E0E3EA" stroke-width="1"/>
+          <line x1="92" y1="37" x2="92" y2="112" stroke="#E0E3EA" stroke-width="1"/>
+          <rect x="13" y="7" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+          <rect x="126" y="7" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+          <rect x="13" y="110" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+          <rect x="126" y="110" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+          <rect x="13" y="57" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+          <rect x="126" y="57" width="9" height="9" rx="2.5" fill="#60A5FA"/>
+        </svg>
+      </div>
+    </div>
+
+    
+    <p class="ob-desc" id="ob-desc" data-i18n="ob_desc_no_sel">Select 1 frame where the table will be placed in the Figma canvas.</p>
+
+    
+    <div class="ob-foot">
+      <button type="button" class="ob-btn-create" id="ob-create" disabled data-i18n-title="ob_create_btn_title" title="Select exactly 1 layer">→ Create</button>
+    </div>
+
+    
+    <section class="ob-section ob-steps" aria-label="Quick Guide">
+      <div class="ob-sechead" data-i18n="ob_quickguide">Quick Guide</div>
+      <ol class="ob-step-list" role="list">
+        <li class="ob-step" role="listitem">
+          <span class="ob-step-num" aria-hidden="true">1</span>
+          <div class="ob-step-body">
+            <div class="ob-step-title" data-i18n="ob_step1_title">Select Node</div>
+            <div class="ob-step-txt" data-i18n="ob_step1_txt" data-i18n-html="true">Select <strong>exactly 1 frame/group</strong> for the table. If multiple are selected during onboarding, the plugin uses the <strong>last clicked one</strong>.</div>
+          </div>
+        </li>
+        <li class="ob-step" role="listitem">
+          <span class="ob-step-num" aria-hidden="true">2</span>
+          <div class="ob-step-body">
+            <div class="ob-step-title" data-i18n="ob_step2_title">Create</div>
+            <div class="ob-step-txt" data-i18n="ob_step2_txt" data-i18n-html="true">The plugin window expands to <strong>fit the view</strong>, enabling cell, row, and column editing.</div>
+          </div>
+        </li>
+        <li class="ob-step" role="listitem">
+          <span class="ob-step-num" aria-hidden="true">3</span>
+          <div class="ob-step-body">
+            <div class="ob-step-title" data-i18n="ob_step3_title">Generate</div>
+            <div class="ob-step-txt" data-i18n="ob_step3_txt" data-i18n-html="true">Press <strong>Generate</strong> in the toolbar to apply the edited grid snapshot to the currently selected node.</div>
+          </div>
+        </li>
+      </ol>
+    </section>
+  </div>
+
+  
+  <div class="ob-foot-bar">www.xamong.com</div>
+
+  
+  <div class="ob-enter-overlay" id="ob-enter-overlay" role="status" aria-live="polite" aria-hidden="true" aria-label="Transitioning">
+    <div class="ob-enter-box">
+      <div class="ob-enter-spinner" aria-hidden="true"></div>
+      <p class="ob-enter-msg" id="ob-enter-msg" data-i18n="ob_enter_msg">Preparing view and layer…</p>
+      <p class="ob-enter-sub" id="ob-enter-sub" data-i18n="ob_enter_sub">This may take a moment for large nodes. Please wait until the canvas appears.</p>
+    </div>
+  </div>
+</div>
+
+
+<canvas id="overlay" class="workspace-only"></canvas>
+
+<canvas id="blur-overlay" class="workspace-only" style="display:none" aria-hidden="true"></canvas>
+<div id="span-grid-scaffold" class="span-grid-scaffold workspace-only" style="display:none" aria-label="SpanGrid work area">
+  <canvas id="grid"></canvas>
+</div>
+<input id="sg-vscroll" class="sg-scroll-y workspace-only" type="range" min="0" max="0" value="0" aria-label="Vertical scroll" style="display:none">
+<input id="sg-hscroll" class="sg-scroll-x workspace-only" type="range" min="0" max="0" value="0" aria-label="Horizontal scroll" style="display:none">
+<div id="sg-corner" class="sg-corner workspace-only" aria-hidden="true" style="display:none"></div>
+
+<div id="sg-context-menu" class="workspace-only" role="menu" style="display:none"></div>
+
+<div class="span-grid-toolbar props-toolbar workspace-only" id="p-props-toolbar" role="toolbar" data-i18n-aria="toolbar_aria" aria-label="SpanGrid Actions" style="display:none">
+    
+    <div class="props-toolbar-sec" role="group" aria-label="Grid" title="Grid">
+      <button type="button" class="btn btn-ico tb-dropdown-trigger" id="p-makegrid" data-i18n-title="toolbar_makegrid_title" title="Make grid">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/><path d="M17 11v6M14 14h6"/></svg>
+      </button>
+      <button type="button" class="btn btn-ico" id="p-selgrid" data-i18n-title="toolbar_selgrid_title" title="Select entire grid (background, Expand, etc.)">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 14h16M10 4v16M14 4v16" opacity=".45"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".25"/></svg>
+      </button>
+    </div>
+    <!-- ── Undo / Redo ── -->
+    <div class="props-toolbar-sec" role="group">
+      <button type="button" class="btn btn-ico" id="p-undo" data-i18n-title="toolbar_undo_title" title="Undo (Ctrl+Z)" disabled>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5h11a5 5 0 0 1 0 10H8"/><path d="M3 9.5l4-4M3 9.5l4 4"/></svg>
+      </button>
+      <button type="button" class="btn btn-ico" id="p-redo" data-i18n-title="toolbar_redo_title" title="Redo (Ctrl+Y)" disabled>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 9.5H10a5 5 0 0 0 0 10h6"/><path d="M21 9.5l-4-4M21 9.5l-4 4"/></svg>
+      </button>
+    </div>
+    
+    <div class="props-toolbar-sec tb-dropdown-wrap" role="group">
+      <button type="button" class="btn btn-ico tb-dropdown-trigger" data-menu="tb-menu-size" title="Size adjustment (equalize rows/cols)" data-i18n-title="toolbar_drop_size_title" aria-haspopup="true" aria-expanded="false">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 9.5h16M4 14.5h16"/><path d="M21 7v10M19.5 7h3M19.5 17h3"/></svg>
+      </button>
+      <div class="tb-dropdown-menu" id="tb-menu-size" role="menu">
+        <div class="tb-drop-label" data-i18n="toolbar_drop_lbl_all">All</div>
+        <div class="tb-drop-row">
+          <button type="button" class="btn btn-ico" id="p-eqall" data-i18n-title="toolbar_eq_all_title" title="All: fit rows &amp; cols — equalize both row heights and column widths at once">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 5v14M15 5v14M5 9h14M5 15h14"/><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-eqrows" data-i18n-title="toolbar_eq_rows_title" title="All: row heights — distribute evenly (canvas height minus grid lines)">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M5 9.7h14M5 14.3h14"/><path d="M20.5 7v10M19 7h3M19 17h3"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-eqcols" data-i18n-title="toolbar_eq_cols_title" title="All: col widths — distribute evenly (canvas width minus grid lines)">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9.7 5v14M14.3 5v14"/><path d="M7 20.5h10M7 19v3M17 19v3"/></svg>
+          </button>
+        </div>
+        <div class="tb-drop-sep"></div>
+        <div class="tb-drop-label" data-i18n="toolbar_drop_lbl_sel">Selected</div>
+        <div class="tb-drop-row">
+          <button type="button" class="btn btn-ico" id="p-eqrows-sel" data-i18n-title="toolbar_eq_rows_sel_title" title="Selection: rows — equalize heights preserving total" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2" opacity=".4"/><rect x="5" y="10" width="14" height="4" rx=".7"/><path d="M21 9v6M19.5 9h3M19.5 15h3"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-eqcols-sel" data-i18n-title="toolbar_eq_cols_sel_title" title="Selection: cols — equalize widths preserving total" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2" opacity=".4"/><rect x="10" y="5" width="4" height="14" rx=".7"/><path d="M9 21h6M9 19.5v3M15 19.5v3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="props-toolbar-sec tb-dropdown-wrap" role="group">
+      <button type="button" class="btn btn-ico tb-dropdown-trigger" data-menu="tb-menu-insert" title="Insert / Delete rows &amp; columns" data-i18n-title="toolbar_drop_insert_title" aria-haspopup="true" aria-expanded="false">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="11" rx="2"/><path d="M4 11.5h16M4 15h16"/><path d="M12 2v4M10 4h4"/></svg>
+      </button>
+      <div class="tb-dropdown-menu" id="tb-menu-insert" role="menu">
+        <div class="tb-drop-label" data-i18n="toolbar_drop_lbl_insert">Insert</div>
+        <div class="tb-drop-row">
+          <button type="button" class="btn btn-ico" id="p-addrow-top" title="Insert row above" data-i18n-title="toolbar_addrow_top_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="7" width="14" height="12" rx="2"/><path d="M5 11h14M5 15h14"/><path d="M12 2v4M10 4h4"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-addrow-bottom" title="Insert row below" data-i18n-title="toolbar_addrow_bottom_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="12" rx="2"/><path d="M5 9h14M5 13h14"/><path d="M12 18v4M10 20h4"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-addcol-left" title="Insert column to the left" data-i18n-title="toolbar_addcol_left_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="5" width="12" height="14" rx="2"/><path d="M11 5v14M15 5v14"/><path d="M2 12h4M4 10v4"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-addcol-right" title="Insert column to the right" data-i18n-title="toolbar_addcol_right_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="12" height="14" rx="2"/><path d="M9 5v14M13 5v14"/><path d="M18 12h4M20 10v4"/></svg>
+          </button>
+        </div>
+        <div class="tb-drop-sep"></div>
+        <div class="tb-drop-label" data-i18n="toolbar_drop_lbl_delete">Delete</div>
+        <div class="tb-drop-row">
+          <button type="button" class="btn btn-ico red" id="p-delrow" title="Delete row" data-i18n-title="toolbar_delrow_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M5 10h14M5 14h14"/><path d="M8 12h8"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico red" id="p-delcol" title="Delete column" data-i18n-title="toolbar_delcol_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M10 5v14M14 5v14"/><path d="M12 8v8"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="props-toolbar-sec tb-dropdown-wrap" role="group">
+      <button type="button" class="btn btn-ico tb-dropdown-trigger" data-menu="tb-menu-move"
+        title="Move row / column" data-i18n-title="toolbar_drop_move_title"
+        aria-haspopup="true" aria-expanded="false">
+        
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="7" width="18" height="12" rx="1.5"/><path d="M3 11h18M3 15h18"/>
+          <path d="M12 21V3M10 5l2-2 2 2"/>
+        </svg>
+      </button>
+      <div class="tb-dropdown-menu" id="tb-menu-move" role="menu" data-keep-open="true">
+        <div class="tb-drop-row">
+          
+          <button type="button" class="btn btn-ico" id="p-moverow-up"
+            title="Move row up" data-i18n-title="toolbar_moverow_up_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="7" width="18" height="12" rx="1.5"/><path d="M3 11h18M3 15h18"/>
+              <path d="M12 21V3M10 5l2-2 2 2"/>
+            </svg>
+          </button>
+          
+          <button type="button" class="btn btn-ico" id="p-moverow-down"
+            title="Move row down" data-i18n-title="toolbar_moverow_down_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="18" height="12" rx="1.5"/><path d="M3 9h18M3 13h18"/>
+              <path d="M12 3v18M10 19l2 2 2-2"/>
+            </svg>
+          </button>
+          
+          <button type="button" class="btn btn-ico" id="p-movecol-left"
+            title="Move column left" data-i18n-title="toolbar_movecol_left_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="7" y="3" width="12" height="18" rx="1.5"/><path d="M11 3v18M15 3v18"/>
+              <path d="M21 12H3M5 10l-2 2 2 2"/>
+            </svg>
+          </button>
+          
+          <button type="button" class="btn btn-ico" id="p-movecol-right"
+            title="Move column right" data-i18n-title="toolbar_movecol_right_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="3" width="12" height="18" rx="1.5"/><path d="M9 3v18M13 3v18"/>
+              <path d="M3 12h18M19 10l2 2-2 2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="props-toolbar-sec tb-dropdown-wrap" role="group">
+      <button type="button" class="btn btn-ico tb-dropdown-trigger" data-menu="tb-menu-border" title="Border presets" data-i18n-title="toolbar_drop_border_title" aria-haspopup="true" aria-expanded="false">
+        
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="1.5"/><path d="M12 6v12M6 12h12" opacity=".25"/></svg>
+      </button>
+      <div class="tb-dropdown-menu" id="tb-menu-border" role="menu">
+        <div class="tb-drop-row">
+          <button type="button" class="btn btn-ico" id="p-brd-all" title="All borders (outer + inner)" data-i18n-title="toolbar_brd_all_title" data-brd-preset="all">
+            <!-- icon-border-all -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="1.5"/><path d="M9.7 5v14M14.3 5v14M5 9.7h14M5 14.3h14"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-brd-outer" title="Outer border only" data-i18n-title="toolbar_brd_outer_title" data-brd-preset="outer">
+            <!-- icon-border-outer -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="1.5"/><path d="M12 6v12M6 12h12" opacity=".25"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-brd-inner" title="Inner borders only" data-i18n-title="toolbar_brd_inner_title" data-brd-preset="inner">
+            <!-- icon-border-inner -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="1.5" opacity=".35"/><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-brd-none" title="No border (clear)" data-i18n-title="toolbar_brd_none_title" data-brd-preset="none">
+            <!-- icon-border-none -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="1.5" opacity=".35"/><path d="M5 19 19 5"/></svg>
+          </button>
+        </div>
+        <div class="tb-drop-sep"></div>
+        <div class="tb-drop-row">
+          <button type="button" class="btn btn-ico" id="p-brd-horizontal" title="Horizontal lines only" data-i18n-title="toolbar_brd_horizontal_title" data-brd-preset="horizontal">
+            <!-- icon-border-horizontal -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="1.5" opacity=".35"/><path d="M5 9.7h14M5 14.3h14"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-brd-vertical" title="Vertical lines only" data-i18n-title="toolbar_brd_vertical_title" data-brd-preset="vertical">
+            <!-- icon-border-vertical -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="1.5" opacity=".35"/><path d="M9.7 5v14M14.3 5v14"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-brd-top" title="Top border only" data-i18n-title="toolbar_brd_top_title" data-brd-preset="top">
+            <!-- icon-border-top -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="7" width="12" height="12" rx="1.5" opacity=".35"/><path d="M6 5h12"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-brd-bottom" title="Bottom border only" data-i18n-title="toolbar_brd_bottom_title" data-brd-preset="bottom">
+            <!-- icon-border-bottom -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="12" height="12" rx="1.5" opacity=".35"/><path d="M6 19h12"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-brd-left" title="Left border only" data-i18n-title="toolbar_brd_left_title" data-brd-preset="left">
+            <!-- icon-border-left -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="6" width="12" height="12" rx="1.5" opacity=".35"/><path d="M5 6v12"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-brd-right" title="Right border only" data-i18n-title="toolbar_brd_right_title" data-brd-preset="right">
+            <!-- icon-border-right -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="6" width="12" height="12" rx="1.5" opacity=".35"/><path d="M19 6v12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="props-toolbar-sec tb-dropdown-wrap hidden" id="p-sec-merge" role="group">
+      <button type="button" class="btn btn-ico tb-dropdown-trigger" data-menu="tb-menu-merge" title="Merge / Split" data-i18n-title="toolbar_drop_merge_title" aria-haspopup="true" aria-expanded="false">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M4 12h16M12 6v12" opacity=".35"/><path d="M9 10l3 2-3 2M15 10l-3 2 3 2"/></svg>
+      </button>
+      <div class="tb-dropdown-menu" id="tb-menu-merge" role="menu">
+        <div class="tb-drop-row">
+          <button type="button" class="btn btn-ico primary" id="p-merge" data-i18n-title="toolbar_merge_title" title="Merge: 2+ selected cells" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M4 12h16M12 6v12" opacity=".35"/><path d="M9 10l3 2-3 2M15 10l-3 2 3 2"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-split" data-i18n-title="toolbar_split_title" title="Split: one merged cell (anchor)" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M12 6v12"/><path d="M12 12H4M12 12h8" opacity=".45"/><path d="M10 10l-3 2 3 2M14 10l3 2-3 2"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico red" id="p-clearmerge" data-i18n-title="toolbar_clearmerge_title" title="Clear all merges" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M9.3 6v12M14.7 6v12M4 12h16"/><path d="M5 4l14 16"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="props-toolbar-sec tb-dropdown-wrap" role="group">
+      <button type="button" class="btn btn-ico tb-dropdown-trigger" data-menu="tb-menu-sort" title="Sort / Filter" data-i18n-title="toolbar_drop_sort_title" aria-haspopup="true" aria-expanded="false">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17V5M4 8l3-3 3 3"/><path d="M13 7h7M13 12h5M13 17h3"/></svg>
+      </button>
+      <div class="tb-dropdown-menu" id="tb-menu-sort" role="menu">
+        <div class="tb-drop-row">
+          <button type="button" class="btn btn-ico" id="p-sort-asc" title="Sort ascending" data-i18n-title="toolbar_sort_asc_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17V5M4 8l3-3 3 3"/><path d="M13 7h7M13 12h5M13 17h3"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-sort-desc" title="Sort descending" data-i18n-title="toolbar_sort_desc_title" disabled>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7v12M4 16l3 3 3-3"/><path d="M13 7h3M13 12h5M13 17h7"/></svg>
+          </button>
+          <button type="button" class="btn btn-ico" id="p-filter" title="Filter" data-i18n-title="toolbar_filter_title" disabled style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="props-toolbar-sec props-toolbar-sec--create" role="group" data-i18n-aria="toolbar_export" data-i18n-title="toolbar_export_title" aria-label="Export" title="Generate grid snapshot in Figma">
+      
+      <div class="cg-split-wrap cg-split-wrap--gen tb-dropdown-wrap">
+        <button type="button" class="cg-split-main cg-split-main--gen" id="p-creategrid" data-i18n-title="toolbar_creategrid_title" title="Generate in current mode">
+          <span class="creategrid-spinner" aria-hidden="true"></span>
+          <span class="creategrid-label" id="p-creategrid-label" data-i18n="toolbar_generate">Generate</span>
+        </button>
+        <button type="button" class="cg-split-caret cg-split-caret--gen tb-dropdown-trigger" data-menu="tb-menu-mode" aria-haspopup="true" aria-expanded="false" data-i18n-title="toolbar_mode_gen_caret_title" title="Select generation mode">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="tb-dropdown-menu cg-mode-menu" id="tb-menu-mode" role="menu">
+          <div id="p-creategrid-mode">
+            <button type="button" class="mode-btn is-active" data-mode="fixed" data-gen-label-key="toolbar_gen_fixed_label" data-i18n-title="toolbar_mode_fixed_title" title="Output as fixed-size Frame">
+              <span data-i18n="toolbar_gen_fixed_label">Generate</span><span class="mode-tag" data-i18n="toolbar_mode_tag_fixed">Basic</span>
+            </button>
+            <button type="button" class="mode-btn" data-mode="auto-layout" data-gen-label-key="toolbar_gen_auto_label" data-i18n-title="toolbar_mode_auto_title" title="Output as Auto Layout Frame (responsive)">
+              <span data-i18n="toolbar_gen_auto_label">Auto Generate</span><span class="mode-tag">Auto</span>
+            </button>
+            <button type="button" class="mode-btn" data-mode="image" data-gen-label-key="toolbar_gen_image_label" data-i18n-title="toolbar_mode_image_title" title="Output as Image — rasterizes the grid to a PNG fill">
+              <span data-i18n="toolbar_gen_image_label">Image Generate</span><span class="mode-tag">PNG</span>
+            </button>
+            <button type="button" class="mode-btn" data-mode="vector" data-gen-label-key="toolbar_gen_vector_label" data-i18n-title="toolbar_mode_vector_title" title="Export as SVG — renders the grid as a scalable vector">
+              <span data-i18n="toolbar_gen_vector_label">SVG Generate (Beta)</span><span class="mode-tag">Vector</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="props-toolbar-sec" id="p-sec-loadgrid" role="group" aria-label="Load xGrid">
+      <button type="button" id="p-loadgrid" data-i18n-title="toolbar_load_grid_title" title="Load grid data from the selected xGrid node into the editor">
+        <svg class="loadgrid-ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5"/><path d="M4 18h16"/></svg>
+        <span class="loadgrid-label" data-i18n="toolbar_load_grid">Load Grid</span>
+      </button>
+    </div>
+</div>
+
+
+<div id="xgrid-node-banner" role="status" aria-live="polite"></div>
+
+<div id="grid-mk-pop" class="grid-mk-pop workspace-only" hidden role="dialog" aria-label="Grid row and column size" aria-modal="false">
+  <div class="grid-mk-actions" role="group" aria-label="Quick add">
+    <button type="button" id="grid-mk-row-add" data-i18n="gm_row_add">+ Row</button>
+    <button type="button" id="grid-mk-col-add" data-i18n="gm_col_add">+ Col</button>
+    <button type="button" id="grid-mk-reset" data-i18n="gm_reset">Reset</button>
+  </div>
+  <div class="grid-mk-inputs">
+    <label data-i18n="gm_cols_label">Cols<input type="number" id="grid-mk-cols" min="1" max="20" value="1" inputmode="numeric" />
+    </label>
+    <span class="grid-mk-x" aria-hidden="true">×</span>
+    <label data-i18n="gm_rows_label">Rows<input type="number" id="grid-mk-rows" min="1" max="20" value="1" inputmode="numeric" />
+    </label>
+  </div>
+  <div class="grid-mk-pickwrap">
+    <div class="grid-mk-picker" id="grid-mk-picker" role="group" data-i18n-aria="gm_picker_aria" aria-label="Drag to select rows × cols (max 10×10)"></div>
+    <div class="grid-mk-tip" id="grid-mk-tip" aria-hidden="true">1 × 1</div>
+  </div>
+</div>
+
+
+<div id="panel" class="workspace-only">
+
+  
+  <div class="panel-card" id="panel-card-props">
+
+    
+    <div class="panel-card-hdr">
+      <button type="button" class="head-back" id="panel-back-to-onboarding" data-i18n-title="panel_back_title" data-i18n-aria="panel_back_aria" title="Back to start" aria-label="Back to start">←</button>
+      <span class="panel-title">SpanGrid</span>
+      <button type="button" class="hdr-ico-btn" id="p-fit-to-grid"
+        data-i18n-title="toolbar_fit_to_grid_title" title="Fit view to grid (center selected node)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4H5a1 1 0 0 0-1 1v2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>
+      </button>
+      <select id="lang-select" class="lang-select" title="Language" onclick="event.stopPropagation()" onchange="window.setLang(this.value)">
+        <option value="en">EN</option>
+      </select>
+      <button type="button" class="panel-card-toggle" data-card="props" title="Collapse / Expand" aria-label="Collapse / expand properties panel">
+        <svg class="card-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M1.5 3.5l3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    
+    <div class="panel-card-body">
+
+      
+      <div class="panel-ctx-header" id="p-status">—</div>
+
+      
+      <div id="p-sec-grid" class="panel-section hidden">
+        <div class="panel-sec-label" data-i18n="sec_grid">Grid</div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="grid_bg">Background</span>
+          <div class="panel-color-row">
+            <input type="color" class="panel-color-swatch" id="p-gbc" value="#ffffff">
+            <input type="text" class="panel-hex-in" id="p-gbc-hex" value="#FFFFFF" maxlength="7">
+            <div class="panel-sep"></div>
+            <input type="number" class="panel-opacity-in" id="p-gbc-opa" value="100" min="0" max="100">
+          </div>
+        </div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="grid_focus">Focus</span>
+          <div class="panel-color-row">
+            <input type="color" class="panel-color-swatch" id="p-fc" value="#3b82f6">
+            <input type="text" class="panel-hex-in" id="p-fc-hex" value="#3B82F6" maxlength="7">
+            <div class="panel-sep"></div>
+            <input type="number" class="panel-opacity-in" id="p-fc-opa" value="12" min="0" max="100">
+          </div>
+        </div>
+        
+        <label class="panel-check-row">
+          <input type="checkbox" id="p-poverflow">
+          <span data-i18n="grid_poverflow">Paste Overflow</span>
+          <button type="button" class="panel-info-btn"
+            data-i18n-title="grid_poverflow_info" title="Automatically expands rows/columns when pasted content exceeds the grid bounds.">i</button>
+        </label>
+      </div>
+
+      
+      <div id="p-sec-cell" class="panel-section hidden">
+        <div class="panel-sec-label" data-i18n="sec_cell">Cell</div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="cell_name">Name</span>
+          <input class="panel-input" style="flex:1" id="p-cname" type="text" autocomplete="off">
+        </div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="cell_text">Text</span>
+          <input class="panel-input" style="flex:1" id="p-ctext" type="text" autocomplete="off">
+        </div>
+        <!--
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="cell_mode">Mode</span>
+          <select class="panel-select" id="p-cmode">
+            <option value="default">default</option><option value="html">html</option>
+          </select>
+        </div>
+        -->
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="cell_bg">Background</span>
+          <div class="panel-color-row">
+            <input type="color" class="panel-color-swatch" id="p-bgc" value="#ffffff">
+            <input type="text" class="panel-hex-in" id="p-bgc-hex" maxlength="7">
+            <div class="panel-sep"></div>
+            <input type="number" class="panel-opacity-in" id="p-bgc-opa" value="100" min="0" max="100">
+          </div>
+        </div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="cell_fg">Foreground</span>
+          <div class="panel-color-row">
+            <input type="color" class="panel-color-swatch" id="p-fgc" value="#17202f">
+            <input type="text" class="panel-hex-in" id="p-fgc-hex" maxlength="7">
+            <div class="panel-sep"></div>
+            <input type="number" class="panel-opacity-in" id="p-fgc-opa" value="100" min="0" max="100">
+          </div>
+        </div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="cell_font">Font</span>
+          <input class="panel-input" style="flex:1;min-width:0" id="p-ff" type="text" value="sans-serif">
+          <input class="panel-input panel-input-num" id="p-fsz" type="number" min="8" max="72" value="13">
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;min-height:28px;margin-bottom:3px">
+          <label class="panel-check-row" style="margin-bottom:0">
+            <input type="checkbox" id="p-fbld">
+            <span data-i18n="cell_bold">Bold</span>
+          </label>
+          <label class="panel-check-row" style="margin-bottom:0">
+            <input type="checkbox" id="p-fital">
+            <span data-i18n="cell_italic" style="font-style:italic">Italic</span>
+          </label>
+        </div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="cell_align">Align</span>
+          <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+            
+            <div class="panel-seg-group" id="p-ta-h-btns" role="group" aria-label="Horizontal alignment">
+              <button type="button" class="panel-seg-btn active" data-align-h="Left" title="Align Left">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="3" height="14" rx="1"/><path d="M10 7h9M10 12h6M10 17h8"/></svg>
+              </button>
+              <button type="button" class="panel-seg-btn" data-align-h="Center" title="Align Center">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16"/><path d="M6 7h12M8 12h8M5 17h14"/></svg>
+              </button>
+              <button type="button" class="panel-seg-btn" data-align-h="Right" title="Align Right">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="17" y="5" width="3" height="14" rx="1"/><path d="M5 7h9M8 12h6M6 17h8"/></svg>
+              </button>
+            </div>
+            
+            <div class="panel-seg-group" id="p-ta-v-btns" role="group" aria-label="Vertical alignment">
+              <button type="button" class="panel-seg-btn active" data-align-v="Top" title="Align Top">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="3" rx="1"/><path d="M7 10v9M12 10v6M17 10v8"/></svg>
+              </button>
+              <button type="button" class="panel-seg-btn" data-align-v="Middle" title="Align Middle">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M7 6v12M12 8v8M17 5v14"/></svg>
+              </button>
+              <button type="button" class="panel-seg-btn" data-align-v="Bottom" title="Align Bottom">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="17" width="14" height="3" rx="1"/><path d="M7 5v9M12 8v6M17 6v8"/></svg>
+              </button>
+            </div>
+          </div>
+          
+          <select class="panel-select" id="p-ta" style="display:none">
+            <option>TopLeft</option><option>TopCenter</option><option>TopRight</option>
+            <option>MiddleLeft</option><option>MiddleCenter</option><option>MiddleRight</option>
+            <option>BottomLeft</option><option>BottomCenter</option><option>BottomRight</option>
+          </select>
+        </div>
+        <div class="panel-rows-disabled">
+          <div class="panel-row">
+            <span class="panel-row-lbl" data-i18n="cell_img_url">Image URL</span>
+            <input class="panel-input" style="flex:1" id="p-iurl" type="url" placeholder="https://…" disabled>
+          </div>
+          <div class="panel-row">
+            <span class="panel-row-lbl" data-i18n="cell_img_layout">Img Layout</span>
+            <select class="panel-select" id="p-ilay" disabled>
+              <option>None</option><option>Center</option><option>Stretch</option>
+              <option>Tile</option><option>Zoom</option><option>Fit</option>
+            </select>
+          </div>
+          <div class="panel-row">
+            <span class="panel-row-lbl" data-i18n="cell_img_align">Img Align</span>
+            <select class="panel-select" id="p-ialign" disabled>
+              <option>TopLeft</option><option>TopCenter</option><option>TopRight</option>
+              <option>MiddleLeft</option><option>MiddleCenter</option><option>MiddleRight</option>
+              <option>BottomLeft</option><option>BottomCenter</option><option>BottomRight</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      
+      <div id="p-sec-row" class="panel-section hidden">
+        <div class="panel-sec-label" data-i18n="sec_row">Row</div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="row_height">Height (px)</span>
+          <input class="panel-input panel-input-num" id="p-rh" type="number" min="8" step="1">
+          <span class="panel-unit">px</span>
+          <span style="flex:1"></span>
+        </div>
+      </div>
+
+      
+      <div id="p-sec-col" class="panel-section hidden">
+        <div class="panel-sec-label" data-i18n="sec_col">Col</div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="col_width">Width (px)</span>
+          <input class="panel-input panel-input-num" id="p-cw" type="number" min="4" step="1">
+          <span class="panel-unit">px</span>
+          <span style="flex:1"></span>
+        </div>
+      </div>
+
+      
+      <div id="p-sec-brd" class="panel-section">
+        <div class="panel-sec-label" data-i18n="sec_border">Border</div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="border_color">Color</span>
+          <div class="panel-color-row">
+            <input type="color" class="panel-color-swatch" id="p-bcol" value="#e5e5e5">
+            <input type="text" class="panel-hex-in" value="#E5E5E5" maxlength="7">
+            <div class="panel-sep"></div>
+            <input type="number" class="panel-opacity-in" id="p-bcol-opa" value="100" min="0" max="100">
+          </div>
+        </div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="border_width">Width</span>
+          <input class="panel-input panel-input-num" id="p-bw" type="number" min="1" max="12" value="1">
+          <span class="panel-unit">px</span>
+          <span style="flex:1"></span>
+        </div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="border_style">Style</span>
+          <div class="panel-seg-group" id="p-bls-btns" role="group" aria-label="Border line style" style="flex:1">
+            <button type="button" class="panel-seg-btn active" data-bls="Solid" title="Solid">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+            </button>
+            <button type="button" class="panel-seg-btn" data-bls="Dash" title="Dash">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h3M11 12h3M17 12h2"/></svg>
+            </button>
+            <button type="button" class="panel-seg-btn" data-bls="Dot" title="Dot">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="18" cy="12" r="1.2" fill="currentColor"/></svg>
+            </button>
+          </div>
+          
+          <select class="panel-select" id="p-bls" style="display:none">
+            <option>Solid</option><option>Dash</option><option>Dot</option>
+          </select>
+        </div>
+        <div class="panel-row">
+          <span class="panel-row-lbl" data-i18n="border_dir">Direction</span>
+          <div class="panel-border-pos">
+            <button type="button" class="panel-bpos-btn" id="p-bl-btn" data-border="left" title="Left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="7" y="6" width="12" height="12" rx="1.5" opacity=".35"/><path d="M5 6v12"/></svg>
+            </button>
+            <button type="button" class="panel-bpos-btn" id="p-bt-btn" data-border="top" title="Top">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="6" y="7" width="12" height="12" rx="1.5" opacity=".35"/><path d="M6 5h12"/></svg>
+            </button>
+            <button type="button" class="panel-bpos-btn" id="p-br-btn" data-border="right" title="Right">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="5" y="6" width="12" height="12" rx="1.5" opacity=".35"/><path d="M19 6v12"/></svg>
+            </button>
+            <button type="button" class="panel-bpos-btn" id="p-bb-btn" data-border="bottom" title="Bottom">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="6" y="5" width="12" height="12" rx="1.5" opacity=".35"/><path d="M6 19h12"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="panel-reset-btn" id="p-breset" data-i18n="border_reset">Reset to inherit<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.3 7.3A6.5 6.5 0 1 1 5.5 12H3.2"/><path d="M3 6v6h6"/></svg>
+          <span data-i18n="border_reset">Reset to inherit</span>
+        </button>
+        
+        <input type="checkbox" id="p-bl" style="display:none">
+        <input type="checkbox" id="p-bt" style="display:none">
+        <input type="checkbox" id="p-br" style="display:none">
+        <input type="checkbox" id="p-bb" style="display:none">
+      </div>
+
+    </div><!-- /panel-card-body: props -->
+
+    
+    <div class="panel-footer">
+      <span class="panel-footer-version">v0.2.0</span>
+      <span class="panel-footer-sep">|</span>
+      <button type="button" class="panel-footer-link" data-i18n="panel_help">Help</button>
+    </div>
+
+  </div><!-- /panel-card: props -->
+
+  
+  <div class="panel-card collapsed" id="panel-card-preset">
+
+    
+    <div class="panel-card-hdr">
+      <span class="panel-card-title" data-i18n="acc_preset">Preset</span>
+      <button type="button" class="panel-card-toggle" data-card="preset" title="Collapse / Expand" aria-label="Collapse / expand preset panel">
+        <svg class="card-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M1.5 3.5l3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    
+    <div class="panel-card-body">
+
+      
+      <div class="panel-section" id="panel-sec-tpl">
+        <div class="panel-gap-row">
+          <span class="panel-gap-lbl" data-i18n="sec_layout">LAYOUT</span>
+          <button type="button" class="btn-style-only selected" id="btn-style-only"
+            data-preset-tpl-id="style_only"
+            data-i18n-title="preset_style_only" title="Style Only">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="6" rx="1.5"/><rect x="5" y="14" width="4" height="6" rx="1.2"/><rect x="11" y="14" width="8" height="6" rx="1.2"/></svg>
+            <span data-i18n="preset_style_only">Style Only</span>
+          </button>
+        </div>
+        <div class="panel-tpl-grid" id="preset-tpl-grid"></div>
+      </div>
+
+      
+      <div class="panel-section" id="panel-sec-sty">
+        <div class="panel-sec-label" data-i18n="preset_sty_label">Style</div>
+        <div class="panel-sty-grid" id="preset-sty-row"></div>
+        <div class="preset-combo-preview" id="preset-combo-preview">
+          <table id="preset-preview-table"></table>
+        </div>
+        
+        <button type="button" id="preset-apply-btn" style="display:none" disabled></button>
+      </div>
+
+    </div><!-- /panel-card-body: preset -->
+
+    
+    <div class="panel-action-bar">
+      <button type="button" class="panel-apply-btn" id="p-panel-apply" data-i18n="panel_apply_btn">✓ Apply</button>
+      <button type="button" class="panel-icon-btn" id="p-panel-copy" title="Copy grid snapshot">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+      <button type="button" class="panel-icon-btn" id="p-panel-more" title="More options" style="font-size:16px;letter-spacing:-1px">···</button>
+    </div>
+
+  </div><!-- /panel-card: preset -->
+
+</div><!-- /panel -->
+
+
+<div id="statusbar" class="workspace-only">
+  <div class="dot" id="status-dot"></div>
+  <span id="status-txt">Live</span>
+</div>
+
+<script>
+@@JS@@
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "name": "@pomelo-suite/scheduler",
+  "version": "0.1.0",
+  "description": "Dependency-free scheduler primitives for Pomelo Suite.",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xamongmini/pomelo-suite.git",
+    "directory": "packages/scheduler"
+  },
+  "bugs": {
+    "url": "https://github.com/xamongmini/pomelo-suite/issues"
+  },
+  "homepage": "https://github.com/xamongmini/pomelo-suite/tree/main/packages/scheduler#readme",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "exports": {
+    ".": {
+      "require": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "pomelo-suite",
+    "scheduler",
+    "schedule"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "pomeloSuite": {
+    "stability": "stable"
+  }
+}

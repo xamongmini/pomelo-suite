@@ -1,0 +1,48 @@
+{
+  "name": "@pomelo-suite/workqueue",
+  "version": "0.1.0",
+  "description": "Work queue and worker-thread helpers.",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xamongmini/pomelo-suite.git",
+    "directory": "packages/workqueue"
+  },
+  "bugs": {
+    "url": "https://github.com/xamongmini/pomelo-suite/issues"
+  },
+  "homepage": "https://github.com/xamongmini/pomelo-suite/tree/main/packages/workqueue#readme",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@pomelo-suite/calculator": "0.1.0"
+  },
+  "keywords": [
+    "pomelo-suite",
+    "workqueue",
+    "queue",
+    "worker-thread"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "require": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "pomeloSuite": {
+    "stability": "stable"
+  }
+}

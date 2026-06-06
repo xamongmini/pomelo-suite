@@ -1,31 +1,71 @@
 # Pomelo Suite
 
-Open-source web UI components for Pomelo Suite.
+Pomelo Suite is an npm workspace for browser and Node.js packages that are being prepared for public GitHub and npm releases.
 
-The public workspace currently starts with SpanGrid. Additional components will
-be added here as they are prepared, documented, and ready for release.
+## Version Status
 
-## Package
+- Root workspace: `0.1.0`
+- `@pomelo-suite/spangrid`: `0.1.1` (patch release)
+- Initial public packages: `0.1.0`
 
-| Package | Install | Purpose |
+Initial public packages:
+
+- `@pomelo-suite/calculator`
+- `@pomelo-suite/color-picker`
+- `@pomelo-suite/diagram`
+- `@pomelo-suite/input`
+- `@pomelo-suite/runtime`
+- `@pomelo-suite/scheduler`
+- `@pomelo-suite/timeline`
+- `@pomelo-suite/workqueue`
+
+## Public Packages
+
+| Package | Path | Purpose |
 |---|---|---|
-| `@pomelo-suite/spangrid` | `npm install @pomelo-suite/spangrid` | Advanced data grid with span support |
+| `@pomelo-suite/spangrid` | `packages/spangrid` | Canvas data grid with cell span support |
+| `@pomelo-suite/calculator` | `packages/calculator` | Expression evaluator and script utilities |
+| `@pomelo-suite/scheduler` | `packages/scheduler` | Scheduler primitives |
+| `@pomelo-suite/workqueue` | `packages/workqueue` | Queue and worker-thread utilities |
+| `@pomelo-suite/runtime` | `packages/runtime` | Runtime and agent workflow primitives |
+| `@pomelo-suite/color-picker` | `packages/color-picker` | Canvas HSV color picker |
+| `@pomelo-suite/input` | `packages/input` | Canvas text input control |
+| `@pomelo-suite/timeline` | `packages/timeline` | Canvas timeline editor |
+| `@pomelo-suite/diagram` | `packages/diagram` | Diagram data and rendering utilities |
 
-## Workspace
+Each package publishes only its library payload:
 
-This repository uses npm workspaces and points only at `packages/spangrid`.
-The package includes its own README, license, package manifest, source, docs,
-and focused tests. Browser examples live under `examples/spangrid`.
+- `src`
+- `README.md`
+- `LICENSE`
+- `package.json`
+
+Examples, repository docs, tests, drafts, logs, and development artifacts are kept outside npm package payloads.
+
+## Examples
+
+Public examples are kept under `examples`.
+
+- `examples/spangrid`: SpanGrid demos, including query analyzer, meta management, and spreadsheet-style samples.
+- `examples/diagram`: Diagram renderer and editor samples.
+- `examples/runtime`: Runtime playground and Node snippets.
+- `examples/package-studio`: Multi-package browser playground.
+
+## Release Docs
+
+Release and publish procedures are documented in:
+
+- [docs/release.md](docs/release.md)
+- [docs/release-notes.md](docs/release-notes.md)
+
+## Workspace Commands
 
 ```bash
 npm run check
 npm run pack:dry-run
+npm run package-studio
+npm run runtime-playground
 ```
-
-## Examples
-
-Open `examples/spangrid/index.html` or `examples/spangrid/showcase.html` in a
-browser. They are static HTML files and do not require a local server.
 
 ## License
 

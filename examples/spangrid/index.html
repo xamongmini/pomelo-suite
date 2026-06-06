@@ -501,7 +501,10 @@
 <body>
   <div class="app">
     <header class="toolbar">
-      <div class="brand">SpanGrid <span id="version" class="version">v0.1.0</span></div>
+      <div class="brand">SpanGrid <span id="version" class="version">v0.1.1</span></div>
+      <button id="queryAnalyzerExample">Query Analyzer</button>
+      <button id="spreadsheetExample">Spreadsheet</button>
+      <button id="metaManagementExample">Meta Management</button>
       <label class="zoom-control">
         <span>Zoom</span>
         <input id="zoom" type="range" min="50" max="200" step="10" value="100">
@@ -753,6 +756,9 @@
     } = window.SpanGrid;
 
     const version = document.getElementById("version");
+    const queryAnalyzerExample = document.getElementById("queryAnalyzerExample");
+    const spreadsheetExample = document.getElementById("spreadsheetExample");
+    const metaManagementExample = document.getElementById("metaManagementExample");
     const canvas = document.getElementById("gridCanvas");
     const status = document.getElementById("status");
     const hScroll = document.getElementById("hScroll");
@@ -797,6 +803,15 @@
     const log = document.getElementById("log");
 
     version.textContent = `v${VERSION}`;
+    queryAnalyzerExample.addEventListener("click", () => {
+      window.location.href = "query-analyzer.html";
+    });
+    spreadsheetExample.addEventListener("click", () => {
+      window.location.href = "spreadsheet.html";
+    });
+    metaManagementExample.addEventListener("click", () => {
+      window.location.href = "meta-management.html";
+    });
 
     const SPAN_GRID_SHOWCASE_EDIT_KEY = "SpanGrid.showcase.editSnapshot";
 
