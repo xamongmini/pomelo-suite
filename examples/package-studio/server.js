@@ -60,6 +60,9 @@ function sendNdjsonHeaders(response) {
     'content-type': 'application/x-ndjson; charset=utf-8',
     'x-content-type-options': 'nosniff',
   });
+  if (typeof response.flushHeaders === 'function') {
+    response.flushHeaders();
+  }
 }
 
 function sendText(response, statusCode, body) {
@@ -614,6 +617,245 @@ async function streamSchedulerLab(requestUrl, response) {
   }
 }
 
+function parseSchedulerRegistryEntries(requestUrl) {
+  const rawSchedules = requestUrl.searchParams.get('schedules');
+  let parsed = [];
+  if (rawSchedules) {
+    try {
+      parsed = JSON.parse(rawSchedules);
+    } catch (_) {
+      parsed = [];
+    }
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    const options = parseSchedulerLabOptions(requestUrl);
+    parsed = [{
+      delayMs: options.delayMs,
+      fixedDay: options.settings.fixedDay,
+      fixedHour: options.settings.fixedHour,
+      id: schedulerIdFor(options.type),
+      intervalSeconds: options.settings.intervalSeconds,
+      name: schedulerLabelFor(options.type),
+      start: options.startTime.toISOString(),
+      triggerCount: options.triggerCount,
+      type: options.type,
+    }];
+  }
+
+  return parsed.slice(0, 20).map((entry, index) => {
+    const requestedType = String(entry.type || 'INTERVAL').toUpperCase();
+    const type = SCHEDULER_LAB_TYPES.includes(requestedType) ? requestedType : 'INTERVAL';
+    return {
+      delayMs: clampInteger(entry.delayMs, 0, 0, SCHEDULER_MAX_DELAY_MS),
+      endTime: entry.noEnd ? null : parseDate(entry.end, '2099-12-31T23:59:59.000Z'),
+      fixedDay: clampInteger(entry.fixedDay, 31, 1, 31),
+      fixedHour: clampInteger(entry.fixedHour, 6, 0, 23),
+      id: String(entry.id || `SCH-${String(index + 1).padStart(3, '0')}`),
+      intervalSeconds: clampInteger(entry.intervalSeconds, 60, 1, 86400),
+      name: String(entry.name || schedulerLabelFor(type)),
+      noEnd: Boolean(entry.noEnd),
+      startTime: parseDate(entry.start, SCHEDULER_DEFAULT_START),
+      triggerCount: clampInteger(entry.triggerCount, 3, 1, 12),
+      type,
+      weekdays: Array.isArray(entry.weekdays) ? entry.weekdays : [],
+    };
+  });
+}
+
+function createSchedulerRegistryRecord(entry) {
+  let virtualNow = new Date(entry.startTime);
+  const schedule = createSchedulerLabSchedule(entry.type, entry.id, entry.startTime, entry, {
+    now: () => virtualNow,
+  });
+
+  function snapshot(state = 'READY') {
+    return {
+      delayMs: entry.delayMs,
+      end: entry.endTime ? entry.endTime.toISOString() : '',
+      fixedDay: entry.fixedDay,
+      fixedHour: entry.fixedHour,
+      id: entry.id,
+      intervalSeconds: entry.intervalSeconds,
+      name: entry.name,
+      nextInvokeTime: schedule.nextInvokeTime.toISOString(),
+      noEnd: entry.noEnd,
+      runs: 0,
+      start: entry.startTime.toISOString(),
+      state,
+      triggerCount: entry.triggerCount,
+      type: entry.type,
+      weekdays: entry.weekdays,
+    };
+  }
+
+  return {
+    active: true,
+    entry,
+    runs: 0,
+    schedule,
+    snapshot: snapshot(),
+    setVirtualNow(value) {
+      virtualNow = new Date(value);
+    },
+  };
+}
+
+function schedulerRegistryPayload(records, events, ok = false) {
+  return {
+    ok,
+    events,
+    schedules: records.map((record) => record.snapshot),
+  };
+}
+
+async function waitForSchedulerDueTime(record, events, emit, isClosed) {
+  const { entry, schedule } = record;
+  const step = record.runs + 1;
+  const nextInvokeTime = schedule.nextInvokeTime.toISOString();
+  let announced = false;
+
+  while (!isClosed()) {
+    const remainingMs = Math.max(0, schedule.nextInvokeTime.getTime() - Date.now());
+    record.snapshot = {
+      ...record.snapshot,
+      nextInvokeTime,
+      remainingMs,
+      state: 'SCHEDULED',
+    };
+
+    if (!announced) {
+      events.push({
+        type: 'SCHEDULED',
+        scheduleID: entry.id,
+        step,
+        delayMs: entry.delayMs,
+        nextInvokeTime,
+        remainingMs,
+      });
+      announced = true;
+    }
+    emit(false);
+
+    if (remainingMs <= 0) {
+      return true;
+    }
+    await sleep(Math.min(remainingMs, 1000));
+  }
+
+  return false;
+}
+
+async function runSchedulerRegistryLiveLab(requestUrl, options = {}) {
+  const entries = parseSchedulerRegistryEntries(requestUrl);
+  const records = entries.map(createSchedulerRegistryRecord);
+  const events = records.map((record) => ({
+    type: 'CREATED',
+    scheduleID: record.entry.id,
+    nextInvokeTime: record.snapshot.nextInvokeTime,
+  }));
+  const onSnapshot = typeof options.onSnapshot === 'function' ? options.onSnapshot : null;
+  const isClosed = typeof options.isClosed === 'function' ? options.isClosed : () => false;
+
+  function emit(ok = false) {
+    if (onSnapshot && !isClosed()) {
+      onSnapshot(schedulerRegistryPayload(records, events, ok));
+    }
+  }
+
+  emit(false);
+  const maxSteps = records.reduce((sum, record) => sum + record.entry.triggerCount, 0);
+  for (let stepIndex = 0; stepIndex < maxSteps; stepIndex += 1) {
+    if (isClosed()) break;
+    const activeRecords = records.filter((record) => record.active && record.runs < record.entry.triggerCount);
+    if (activeRecords.length === 0) break;
+    activeRecords.sort((left, right) => left.schedule.compareTo(right.schedule));
+    const record = activeRecords[0];
+    const { entry, schedule } = record;
+    const before = schedule.nextInvokeTime.toISOString();
+    const step = record.runs + 1;
+
+    if (!await waitForSchedulerDueTime(record, events, emit, isClosed)) {
+      break;
+    }
+
+    for (const type of ['INVOKING', 'RUNNING']) {
+      record.snapshot = { ...record.snapshot, state: type, nextInvokeTime: before };
+      events.push({
+        type,
+        scheduleID: entry.id,
+        step,
+        delayMs: entry.delayMs,
+        nextInvokeTime: before,
+      });
+      emit(false);
+    }
+
+    if (entry.delayMs > 0) {
+      await sleep(entry.delayMs);
+    }
+    if (isClosed()) break;
+
+    const completedAt = new Date(new Date(before).getTime() + entry.delayMs).toISOString();
+    record.setVirtualNow(completedAt);
+    const after = entry.type === 'INTERVAL2'
+      ? schedule.recalculateNextInvokeTime().toISOString()
+      : schedule.triggerEvents().toISOString();
+    record.runs += 1;
+
+    let state = 'INVOKED';
+    if (entry.type === 'ONETIME') {
+      state = 'DELETED';
+      record.active = false;
+    } else if (entry.endTime && new Date(after).getTime() > entry.endTime.getTime()) {
+      state = 'DONE';
+      record.active = false;
+    }
+
+    record.snapshot = {
+      ...record.snapshot,
+      nextInvokeTime: after,
+      runs: record.runs,
+      state,
+    };
+    events.push({
+      type: state,
+      scheduleID: entry.id,
+      step,
+      before,
+      after,
+      completedAt,
+      nextInvokeTime: after,
+    });
+    emit(false);
+  }
+
+  return schedulerRegistryPayload(records, events, true);
+}
+
+async function streamSchedulerRegistry(requestUrl, response) {
+  let closed = false;
+
+  response.on('close', () => {
+    closed = true;
+  });
+  sendNdjsonHeaders(response);
+
+  const writeRecord = (record) => {
+    if (!closed && !response.destroyed) {
+      response.write(`${JSON.stringify(record)}\n`);
+    }
+  };
+
+  const payload = await runSchedulerRegistryLiveLab(requestUrl, {
+    isClosed: () => closed,
+    onSnapshot: (snapshot) => writeRecord({ type: 'snapshot', payload: snapshot }),
+  });
+  writeRecord({ type: 'result', payload });
+  if (!closed && !response.destroyed) {
+    response.end();
+  }
+}
+
 function runRuntimeDemo(name = 'Pomelo', message = 'hello {@parameter.name}') {
   const runtime = new runtimePackage.TumblrRuntime();
   const controller = runtime.loadTumbler('demo', {
@@ -662,6 +904,16 @@ async function handleApi(requestUrl, response) {
 
     if (requestUrl.pathname === '/api/scheduler/lab/events') {
       await streamSchedulerLab(requestUrl, response);
+      return true;
+    }
+
+    if (requestUrl.pathname === '/api/scheduler/registry') {
+      sendJson(response, 200, await runSchedulerRegistryLiveLab(requestUrl));
+      return true;
+    }
+
+    if (requestUrl.pathname === '/api/scheduler/registry/events') {
+      await streamSchedulerRegistry(requestUrl, response);
       return true;
     }
 

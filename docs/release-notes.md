@@ -47,7 +47,52 @@
 
 ---
 
-## 2) Initial publish: `calculator`, `color-picker`, `diagram`, `input`, `runtime`, `scheduler`, `timeline`, `workqueue`
+## 2) Patch release: `@pomelo-suite/timeline` `v0.1.1`
+
+### Date
+
+- 2026-06-23 (작성일 기준)
+
+### Type
+
+- Patch release (이전 버전: `0.1.0`)
+
+### Scope
+
+- 패치 대상: `@pomelo-suite/timeline` only
+- 배포 경로: `npm publish --workspace @pomelo-suite/timeline --access public`
+
+### Notes
+
+- timeline 버전을 0.1.1로 상향
+- clip move/resize 종료 이벤트와 change 이벤트 보강
+- time ruler 렌더링 옵션(`rulerMode: "time"`) 및 시간 라벨 렌더링 보강
+- `package-lock.json` 내 workspace 버전 정합 반영
+
+### Verification
+
+- `npm run check`
+- `npm run pack:dry-run`
+- `npm view @pomelo-suite/timeline version` -> `0.1.1`
+
+### Suggested GitHub release body
+
+```text
+## @pomelo-suite/timeline v0.1.1
+
+- timeline 버전을 0.1.1로 상향
+- clip move/resize 종료 이벤트 및 change 이벤트 보강
+- time ruler 렌더링 옵션과 테스트 보강
+```
+
+### Suggested commit/tag
+
+- Commit: `Release @pomelo-suite/timeline v0.1.1`
+- Tag: `timeline-v0.1.1`
+
+---
+
+## 3) Initial publish: `calculator`, `color-picker`, `diagram`, `input`, `runtime`, `scheduler`, `timeline`, `workqueue`
 
 ### Date
 
@@ -63,7 +108,7 @@
   - `@pomelo-suite/input` `0.1.0`
   - `@pomelo-suite/runtime` `0.1.0`
   - `@pomelo-suite/scheduler` `0.1.0`
-  - `@pomelo-suite/timeline` `0.1.0`
+  - `@pomelo-suite/timeline` `0.1.1` (patch after initial `0.1.0`)
   - `@pomelo-suite/workqueue` `0.1.0`
 
 ### Scope
@@ -92,7 +137,7 @@ npm publish --workspace @pomelo-suite/workqueue --access public
 - `npm view @pomelo-suite/input version` → `0.1.0`
 - `npm view @pomelo-suite/runtime version` → `0.1.0`
 - `npm view @pomelo-suite/scheduler version` → `0.1.0`
-- `npm view @pomelo-suite/timeline version` → `0.1.0`
+- `npm view @pomelo-suite/timeline version` → `0.1.1`
 - `npm view @pomelo-suite/workqueue version` → `0.1.0`
 
 ### Suggested GitHub release body
@@ -101,7 +146,7 @@ npm publish --workspace @pomelo-suite/workqueue --access public
 ## Pomelo Suite Initial Public Release
 
 - 공개 패키지: calculator, color-picker, diagram, input, runtime, scheduler, timeline, workqueue
-- 각 패키지 버전: 0.1.0
+- 각 패키지 버전: 대부분 0.1.0, timeline patch 0.1.1
 - npm payload policy: `src`, `README.md`, `LICENSE`, `package.json`
 - 예제/플레이그라운드: examples/*는 저장소에서 별도 확인
 ```

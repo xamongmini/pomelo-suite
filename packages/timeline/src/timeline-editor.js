@@ -1,3 +1,5 @@
+const EventArgs = { empty: Object.freeze({}) };
+
 class TimelineEditor {
     constructor(canvas, options = {}) {
         this.canvas = canvas;
@@ -24,6 +26,7 @@ class TimelineEditor {
         this.dragStartMouse = { x: 0, y: 0 };
         this.dragStartClipFrame = 0;
         this.dragClipTrackIndex = -1;
+        this.dragOriginTrackIndex = -1;
         this.dragHoverTrack = -1;
         
         // Clip resize
@@ -95,6 +98,10 @@ class TimelineEditor {
         this.tickUnit = 1;
         this.beatUnit = 4;
         this.barUnit = 16;
+        this.rulerMode = options.rulerMode || 'bars';
+        this.msPerFrame = Math.max(1, Number(options.msPerFrame || 100));
+        this.majorTickMs = Math.max(this.msPerFrame, Number(options.majorTickMs || 1000));
+        this.minorTickMs = Math.max(this.msPerFrame, Number(options.minorTickMs || 250));
         
         // Colors
         this.backgroundColor = '#242424';
@@ -115,6 +122,10 @@ class TimelineEditor {
         this.clipSelectedHandlers = [];
         this.selectedTrackChangedHandlers = [];
         this.selectedClipChangedHandlers = [];
+        this.clipMoveEndHandlers = [];
+        this.clipResizeEndHandlers = [];
+        this.clipChangedHandlers = [];
+        this.timelineChangedHandlers = [];
         
         // Initialize
         this.setupEventListeners();
@@ -157,7 +168,11 @@ class TimelineEditor {
             trackHeaderWidth: this.trackHeaderWidth,
             scrollX: this.scrollX,
             verticalScroll: this.verticalScroll,
-            currentFrame: this.currentFrame
+            currentFrame: this.currentFrame,
+            rulerMode: this.rulerMode,
+            msPerFrame: this.msPerFrame,
+            majorTickMs: this.majorTickMs,
+            minorTickMs: this.minorTickMs
         };
     }
     
@@ -173,6 +188,10 @@ class TimelineEditor {
         this.scrollX = state.scrollX;
         this.verticalScroll = state.verticalScroll;
         this.currentFrame = state.currentFrame;
+        this.rulerMode = state.rulerMode || this.rulerMode;
+        this.msPerFrame = Math.max(1, Number(state.msPerFrame || this.msPerFrame));
+        this.majorTickMs = Math.max(this.msPerFrame, Number(state.majorTickMs || this.majorTickMs));
+        this.minorTickMs = Math.max(this.msPerFrame, Number(state.minorTickMs || this.minorTickMs));
         this.internalHistoryChange = false;
         this.render();
     }
@@ -451,6 +470,7 @@ class TimelineEditor {
                     this.dragStartClipFrame = clip.start;
                     this.draggingClip = true;
                     this.dragHoverTrack = t;
+                    this.dragOriginTrackIndex = t;
                     this.selectedClipTrack = t;
                     this.selectedClipIndex = c;
                     this.selectedTrackIndex = t;
@@ -712,12 +732,52 @@ class TimelineEditor {
         }
         
         if (this.draggingClip) {
+            const clip = this.dragClip;
+            const track = this.dragTrack;
+            const trackIndex = this.dragClipTrackIndex;
+            const oldTrackIndex = this.dragOriginTrackIndex;
+            const moved = clip && (
+                clip.start !== this.dragStartClipFrame ||
+                trackIndex !== oldTrackIndex
+            );
+            if (moved) {
+                const args = this.createClipEventArgs({
+                    clip,
+                    track,
+                    trackIndex,
+                    oldTrackIndex,
+                    oldStart: this.dragStartClipFrame,
+                    reason: 'move'
+                });
+                this.fireEvent('clipMoveEnd', args);
+                this.fireEvent('clipChanged', args);
+                this.fireEvent('timelineChanged', { ...args, reason: 'clip:move' });
+            }
             this.draggingClip = false;
             this.dragClip = null;
             this.dragTrack = null;
             this.dragClipTrackIndex = -1;
+            this.dragOriginTrackIndex = -1;
         }
         
+        if (this.resizingClip && this.resizeClip) {
+            const resized = this.resizeClip.start !== this.resizeOriginStart ||
+                this.resizeClip.length !== this.resizeOriginLength;
+            if (resized) {
+                const trackIndex = this.tracks.indexOf(this.resizeTrack);
+                const args = this.createClipEventArgs({
+                    clip: this.resizeClip,
+                    track: this.resizeTrack,
+                    trackIndex,
+                    oldStart: this.resizeOriginStart,
+                    oldLength: this.resizeOriginLength,
+                    reason: 'resize'
+                });
+                this.fireEvent('clipResizeEnd', args);
+                this.fireEvent('clipChanged', args);
+                this.fireEvent('timelineChanged', { ...args, reason: 'clip:resize' });
+            }
+        }
         this.resizingClip = false;
         this.resizeClip = null;
         this.resizeTrack = null;
@@ -1038,10 +1098,31 @@ class TimelineEditor {
     }
     
     // Events
-    fireEvent(eventName) {
+    createClipEventArgs(detail = {}) {
+        const clip = detail.clip || null;
+        const track = detail.track || null;
+        const trackIndex = Number.isInteger(detail.trackIndex)
+            ? detail.trackIndex
+            : this.tracks.indexOf(track);
+        const clipIndex = track && clip ? track.clips.indexOf(clip) : -1;
+        return {
+            reason: detail.reason || '',
+            clip,
+            track,
+            trackIndex,
+            clipIndex,
+            start: clip ? clip.start : undefined,
+            length: clip ? clip.length : undefined,
+            oldStart: detail.oldStart,
+            oldLength: detail.oldLength,
+            oldTrackIndex: detail.oldTrackIndex
+        };
+    }
+
+    fireEvent(eventName, args = EventArgs.empty) {
         const handlers = this[eventName + 'Handlers'];
         if (handlers) {
-            handlers.forEach(handler => handler(this, EventArgs.empty));
+            handlers.forEach(handler => handler(this, args));
         }
     }
     
@@ -1333,6 +1414,11 @@ class TimelineEditor {
     
     drawTimeline(ctx) {
         const width = this.canvas.width;
+
+        if (this.rulerMode === 'time') {
+            this.drawTimeTimeline(ctx, width);
+            return;
+        }
         
         if (this.snapGrid > 0) {
             // Timeline background
@@ -1413,6 +1499,58 @@ class TimelineEditor {
                 }
             }
         }
+    }
+
+    drawTimeTimeline(ctx, width) {
+        ctx.fillStyle = '#303030';
+        ctx.fillRect(0, 0, width, this.timelineHeight);
+
+        const visibleFrames = Math.floor((width - this.trackHeaderWidth) / this.frameWidth) + 2;
+        const visibleStartMs = this.scrollX * this.msPerFrame;
+        const visibleEndMs = (this.scrollX + visibleFrames) * this.msPerFrame;
+        const minorTickMs = Math.max(this.msPerFrame, Number(this.minorTickMs || this.msPerFrame));
+        const majorTickMs = Math.max(minorTickMs, Number(this.majorTickMs || minorTickMs));
+        const firstTickMs = Math.floor(visibleStartMs / minorTickMs) * minorTickMs;
+
+        for (let ms = firstTickMs; ms <= visibleEndMs; ms += minorTickMs) {
+            const frame = ms / this.msPerFrame;
+            const x = this.trackHeaderWidth + (frame - this.scrollX) * this.frameWidth;
+            if (x < this.trackHeaderWidth - this.frameWidth || x > width + this.frameWidth) continue;
+
+            const isMajor = Math.abs(ms % majorTickMs) < 0.0001;
+            if (isMajor) {
+                ctx.strokeStyle = this.barColor;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, this.timelineHeight);
+                ctx.stroke();
+
+                ctx.fillStyle = this.barColor;
+                ctx.font = '11px Segoe UI';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(this.formatTimeRulerLabel(ms), x + 2, 1);
+            } else {
+                ctx.strokeStyle = this.beatColor;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, this.timelineHeight - 12);
+                ctx.lineTo(x, this.timelineHeight);
+                ctx.stroke();
+            }
+        }
+    }
+
+    formatTimeRulerLabel(ms) {
+        const totalMs = Math.max(0, Number(ms || 0));
+        if (totalMs < 10000) {
+            return `${(totalMs / 1000).toFixed(1)}s`;
+        }
+        const seconds = Math.floor(totalMs / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainSeconds = seconds % 60;
+        return `${minutes}:${remainSeconds.toString().padStart(2, '0')}`;
     }
     
     // Public methods

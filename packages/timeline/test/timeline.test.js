@@ -5,10 +5,20 @@ const test = require('node:test');
 const pkg = require('../package.json');
 const { TimelineEditor } = require('../src');
 
-function createCanvasContext() {
+function createCanvasContext(recording = null) {
   return new Proxy({}, {
     get(target, property) {
       if (property === 'measureText') return () => ({ width: 0 });
+      if (property === 'fillText' && recording) {
+        return (text, x, y) => {
+          recording.fillText.push({ text: String(text), x, y });
+        };
+      }
+      if ((property === 'moveTo' || property === 'lineTo') && recording) {
+        return (x, y) => {
+          recording[property].push({ x, y });
+        };
+      }
       if (!(property in target)) target[property] = () => {};
       return target[property];
     },
@@ -55,16 +65,35 @@ function createElement(options = {}) {
   return element;
 }
 
-function createCanvas(rect = { left: 0, top: 0, right: 0, bottom: 0, width: 300, height: 160 }) {
+function createCanvas(
+  rect = { left: 0, top: 0, right: 0, bottom: 0, width: 300, height: 160 },
+  recording = null,
+) {
+  const listeners = new Map();
   return {
     width: rect.width,
     height: rect.height,
     style: {},
     parentElement: createElement(),
     getContext() {
-      return createCanvasContext();
+      return createCanvasContext(recording);
     },
-    addEventListener() {},
+    addEventListener(type, handler) {
+      const handlers = listeners.get(type) || [];
+      handlers.push(handler);
+      listeners.set(type, handlers);
+    },
+    dispatch(type, event = {}) {
+      for (const handler of listeners.get(type) || []) {
+        handler({
+          button: 0,
+          clientX: 0,
+          clientY: 0,
+          preventDefault() {},
+          ...event,
+        });
+      }
+    },
     focus() {
       this.focused = true;
     },
@@ -171,5 +200,118 @@ test('supports direct overlay elements and missing overlays', () => {
       editor.showEditBox({ x: 2, y: 3, width: 40, height: 12 }, 'Missing');
       editor.endEditing(true);
     });
+  });
+});
+
+test('fires selection events without requiring external EventArgs globals', () => {
+  const canvas = createCanvas();
+
+  withMockDocument({}, () => {
+    const editor = new TimelineEditor(canvas);
+    const clip = editor.addClip(editor.tracks.push(editor.createTrack('Actions')) - 1, 'render', 0, 4, '#22c55e');
+    let called = 0;
+
+    editor.addEventListener('clipSelected', (sender, args) => {
+      called += 1;
+      assert.equal(sender, editor);
+      assert.deepEqual(args, {});
+    });
+
+    assert.doesNotThrow(() => editor.setSelectedClip(clip));
+    assert.equal(called, 1);
+  });
+});
+
+test('fires explicit change events when clip resize ends', () => {
+  const canvas = createCanvas({ left: 0, top: 0, right: 600, bottom: 180, width: 600, height: 180 });
+
+  withMockDocument({}, () => {
+    const editor = new TimelineEditor(canvas);
+    editor.setSnapGrid(1);
+    const track = editor.addTrack('Actions');
+    const clip = editor.addClip(0, 'render', 0, 10, '#22c55e');
+    const events = [];
+
+    editor.addEventListener('clipResizeEnd', (sender, args) => events.push(['resize', sender, args]));
+    editor.addEventListener('clipChanged', (sender, args) => events.push(['changed', sender, args]));
+    editor.addEventListener('timelineChanged', (sender, args) => events.push(['timeline', sender, args]));
+
+    const y = editor.timelineHeight + 10;
+    const rightHandleX = editor.trackHeaderWidth + clip.length * editor.frameWidth - 3;
+    canvas.dispatch('mousedown', { clientX: rightHandleX, clientY: y });
+    canvas.dispatch('mousemove', { clientX: rightHandleX + editor.frameWidth, clientY: y });
+    canvas.dispatch('mouseup', { clientX: rightHandleX + editor.frameWidth, clientY: y });
+
+    assert.equal(clip.length, 11);
+    assert.equal(events.length, 3);
+    assert.equal(events[0][0], 'resize');
+    assert.equal(events[0][1], editor);
+    assert.equal(events[0][2].clip, clip);
+    assert.equal(events[0][2].track, track);
+    assert.equal(events[0][2].oldLength, 10);
+    assert.equal(events[0][2].length, 11);
+    assert.equal(events[1][2].reason, 'resize');
+    assert.equal(events[2][2].reason, 'clip:resize');
+  });
+});
+
+test('fires explicit change events when clip move ends', () => {
+  const canvas = createCanvas({ left: 0, top: 0, right: 600, bottom: 180, width: 600, height: 180 });
+
+  withMockDocument({}, () => {
+    const editor = new TimelineEditor(canvas);
+    editor.setSnapGrid(1);
+    const track = editor.addTrack('Actions');
+    const clip = editor.addClip(0, 'stream', 0, 8, '#ec4899');
+    const events = [];
+
+    editor.addEventListener('clipMoveEnd', (sender, args) => events.push(['move', sender, args]));
+    editor.addEventListener('clipChanged', (sender, args) => events.push(['changed', sender, args]));
+    editor.addEventListener('timelineChanged', (sender, args) => events.push(['timeline', sender, args]));
+
+    const y = editor.timelineHeight + 10;
+    const clipBodyX = editor.trackHeaderWidth + 20;
+    canvas.dispatch('mousedown', { clientX: clipBodyX, clientY: y });
+    canvas.dispatch('mousemove', { clientX: clipBodyX + editor.frameWidth * 2, clientY: y });
+    canvas.dispatch('mouseup', { clientX: clipBodyX + editor.frameWidth * 2, clientY: y });
+
+    assert.equal(clip.start, 2);
+    assert.equal(events.length, 3);
+    assert.equal(events[0][0], 'move');
+    assert.equal(events[0][1], editor);
+    assert.equal(events[0][2].clip, clip);
+    assert.equal(events[0][2].track, track);
+    assert.equal(events[0][2].oldStart, 0);
+    assert.equal(events[0][2].start, 2);
+    assert.equal(events[1][2].reason, 'move');
+    assert.equal(events[2][2].reason, 'clip:move');
+  });
+});
+
+test('renders timeline ruler labels as elapsed time when rulerMode is time', () => {
+  const recording = { fillText: [], moveTo: [], lineTo: [] };
+  const canvas = createCanvas(
+    { left: 0, top: 0, right: 520, bottom: 160, width: 520, height: 160 },
+    recording,
+  );
+
+  withMockDocument({}, () => {
+    const editor = new TimelineEditor(canvas, {
+      rulerMode: 'time',
+      msPerFrame: 100,
+      majorTickMs: 1000,
+      minorTickMs: 250,
+    });
+    editor.trackHeaderWidth = 100;
+    editor.frameWidth = 10;
+    editor.frameCount = 40;
+    editor.render();
+
+    const labels = recording.fillText.map((item) => item.text);
+    assert(labels.includes('0.0s'));
+    assert(labels.includes('1.0s'));
+    assert(labels.includes('2.0s'));
+    assert(!labels.includes('1'));
+    assert(!labels.includes('2'));
   });
 });

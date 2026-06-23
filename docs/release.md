@@ -3,8 +3,9 @@
 이 문서는 GitHub 업로드와 npm 배포를 한 번에 진행할 수 있게 정리한 체크리스트입니다.
 
 - 루트 버전: `0.1.0`
-- 공개 패키지 기준: `calculator/color-picker/diagram/input/runtime/scheduler/timeline/workqueue` = `0.1.0`
+- 공개 패키지 기준: `calculator/color-picker/diagram/input/runtime/scheduler/workqueue` = `0.1.0`
 - `@pomelo-suite/spangrid` = `0.1.1`
+- `@pomelo-suite/timeline` = `0.1.1`
 
 ## 1) 버전/메타 점검
 
@@ -107,7 +108,15 @@ npm config get registry
 #### 배포 스크립트
 
 `scripts/npm-publish-order.ps1`를 실행하면 현재 기준 9개 패키지를 고정 순서로 배포합니다.  
-(spangrid는 `0.1.1`, 나머지는 `0.1.0` 기준)
+이미 npm에 올라간 버전은 재배포할 수 없으므로, 전체 최초 배포 이후에는 변경된 패키지만 publish합니다.
+
+현재 patch publish 대상:
+
+```powershell
+npm publish --workspace @pomelo-suite/timeline --access public
+```
+
+전체 신규 환경에서 순서가 필요할 때의 기준은 spangrid/timeline `0.1.1`, 나머지 `0.1.0`입니다.
 
 ```powershell
 # scripts/npm-publish-order.ps1
@@ -127,9 +136,9 @@ npm publish --workspace @pomelo-suite/diagram --access public
 권장 테스트:
 
 ```powershell
-npm pack --workspace @pomelo-suite/spangrid
-tar -tf pomelo-suite-spangrid-0.1.1.tgz
-Remove-Item -LiteralPath pomelo-suite-spangrid-0.1.1.tgz
+npm pack --workspace @pomelo-suite/timeline
+tar -tf pomelo-suite-timeline-0.1.1.tgz
+Remove-Item -LiteralPath pomelo-suite-timeline-0.1.1.tgz
 ```
 
 배포 후 검증:
@@ -137,6 +146,8 @@ Remove-Item -LiteralPath pomelo-suite-spangrid-0.1.1.tgz
 ```powershell
 npm view @pomelo-suite/spangrid version
 npm view @pomelo-suite/spangrid dist.integrity
+npm view @pomelo-suite/timeline version
+npm view @pomelo-suite/timeline dist.integrity
 ```
 
 ### 3-3. 버전 갱신
@@ -145,7 +156,7 @@ npm view @pomelo-suite/spangrid dist.integrity
 
 ```powershell
 cd <repo-root>
-npm version patch --workspace @pomelo-suite/spangrid --no-git-tag-version
+npm version patch --workspace @pomelo-suite/timeline --no-git-tag-version
 ```
 
 `patch`/`minor`/`major`로 조절합니다.
@@ -157,10 +168,10 @@ npm version patch --workspace @pomelo-suite/spangrid --no-git-tag-version
 - 배포 후 Git 태그와 커밋을 남기는 것을 추천합니다.
 
 ```powershell
-git add package.json package-lock.json packages/spangrid/package.json packages/*/package.json
-git add packages/spangrid/README.md docs/release.md
-git commit -m "Release @pomelo-suite/spangrid v0.1.1"
-git tag spangrid-v0.1.1
+git add package-lock.json packages/timeline/package.json packages/timeline/src packages/timeline/test
+git add README.md docs/release.md docs/release-notes.md tests
+git commit -m "Release @pomelo-suite/timeline v0.1.1"
+git tag timeline-v0.1.1
 git push origin HEAD --follow-tags
 ```
 
@@ -175,7 +186,7 @@ npm publish --workspace @pomelo-suite/diagram --access public
 npm publish --workspace @pomelo-suite/input --access public
 npm publish --workspace @pomelo-suite/runtime --access public
 npm publish --workspace @pomelo-suite/scheduler --access public
-npm publish --workspace @pomelo-suite/timeline --access public
+npm publish --workspace @pomelo-suite/timeline --access public # use 0.1.1 when republishing after the patch
 npm publish --workspace @pomelo-suite/workqueue --access public
 ```
 

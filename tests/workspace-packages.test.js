@@ -15,7 +15,7 @@ const expectedPackages = [
   ['runtime', '@pomelo-suite/runtime', 'experimental'],
   ['color-picker', '@pomelo-suite/color-picker', 'stable'],
   ['input', '@pomelo-suite/input', 'stable'],
-  ['timeline', '@pomelo-suite/timeline', 'stable'],
+  ['timeline', '@pomelo-suite/timeline', 'stable', '0.1.1'],
   ['diagram', '@pomelo-suite/diagram', 'experimental'],
 ];
 
@@ -241,7 +241,28 @@ test('package studio, runtime, and diagram examples are public examples, not pac
   assert.match(packageStudioHtml, /src="\/examples\/diagram\/diagram-editor\.html"/);
   assert.match(packageStudioHtml, /href="\/examples\/diagram\/diagram-editor\.html"/);
   assert.match(packageStudioHtml, /href="\/examples\/diagram\/renderer-lab\.html"/);
+  assert.match(packageStudioHtml, /id="scheduler-register"/);
+  assert.match(packageStudioHtml, /id="scheduler-start"/);
+  assert.match(packageStudioHtml, /id="scheduler-stop"/);
+  assert.match(packageStudioHtml, /id="scheduler-query"/);
+  assert.match(packageStudioHtml, /id="scheduler-list-body"/);
+  assert.match(packageStudioHtml, /data-scheduler-day="1"/);
+  assert.match(packageStudioServer, /toISOString\(\)/);
+  assert.match(packageStudioServer, /\/api\/scheduler\/registry/);
+  assert.match(packageStudioServer, /runSchedulerRegistryLiveLab/);
+  assert.match(packageStudioHtml, /id="scheduler-start-control" type="datetime-local"/);
+  assert.match(packageStudioServer, /parseDate/);
+  assert.match(packageStudioHtml, /id="scheduler-delay-ms"/);
+  assert.match(packageStudioHtml, /id="scheduler-start"/);
+  assert.match(packageStudioHtml, /id="scheduler-stop"/);
+  assert.match(packageStudioHtml, /id="scheduler-query"/);
   assert.doesNotMatch(packageStudioHtml, /\/packages\/diagram\/src\/diagram-editor\.html/);
+  assert.match(packageStudioServer, /SCHEDULER_MAX_DELAY_MS = 10000/);
+  assert.match(packageStudioHtml, /max="10000" value="1000"/);
+  assert.match(packageStudioServer, /runSchedulerRegistryLiveLab/);
+  const packageStudioApp = fs.readFileSync(path.join(ROOT, 'examples', 'package-studio', 'public', 'app.js'), 'utf8');
+  assert.match(packageStudioApp, /new Date\(withSeconds\)\.toISOString\(\)/);
+  assert.match(packageStudioApp, /date\.getHours\(\)/);
   assert.match(packageStudioServer, /const EXAMPLES_DIR = path\.join\(ROOT, 'examples'\);/);
   assert.match(packageStudioServer, /requestUrl\.pathname\.startsWith\('\/examples\/'\)/);
 });

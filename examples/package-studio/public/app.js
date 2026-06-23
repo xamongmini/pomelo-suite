@@ -17,6 +17,7 @@ let colorPicker = null;
 let gridView = null;
 let timeline = null;
 let schedulerAbortController = null;
+let schedulerSequence = 1;
 let workQueueAbortController = null;
 
 const SCHEDULER_MAX_DELAY_MS = 10000;
@@ -66,12 +67,17 @@ const playgroundState = {
   },
   scheduler: {
     delayMs: 1000,
+    end: '2026-02-28T18:00',
     fixedDay: 31,
     fixedHour: 6,
-    intervalSeconds: 60,
+    intervalSeconds: 5,
+    name: 'Monthly close',
+    noEnd: false,
+    registered: [],
     start: '2026-01-31T09:30',
-    triggerCount: 3,
-    type: 'MONTHLY',
+    triggerCount: 4,
+    type: 'INTERVAL',
+    weekdays: [1, 2, 3, 4, 5],
   },
   workqueue: {
     concurrentLimit: 2,
@@ -903,37 +909,58 @@ function schedulerStartToIso(value) {
   if (!trimmed) return '2026-01-31T09:30:00.000Z';
   if (trimmed.endsWith('Z')) return trimmed;
   const withSeconds = trimmed.length === 16 ? `${trimmed}:00` : trimmed;
-  return `${withSeconds}.000Z`;
+  return new Date(withSeconds).toISOString();
 }
 
-function schedulerLabUrl(path = '/api/scheduler/lab') {
-  const state = playgroundState.scheduler;
+function schedulerDateTimeToIso(value) {
+  return schedulerStartToIso(value);
+}
+
+function schedulerRegistryUrl(path = '/api/scheduler/registry/events') {
+  const schedules = playgroundState.scheduler.registered.map((item) => ({
+    delayMs: item.delayMs,
+    end: item.end,
+    fixedDay: item.fixedDay,
+    fixedHour: item.fixedHour,
+    id: item.id,
+    intervalSeconds: item.intervalSeconds,
+    name: item.name,
+    noEnd: item.noEnd,
+    start: item.start,
+    triggerCount: item.triggerCount,
+    type: item.type,
+    weekdays: item.weekdays,
+  }));
   const params = new URLSearchParams({
-    delayMs: String(state.delayMs),
-    fixedDay: String(state.fixedDay),
-    fixedHour: String(state.fixedHour),
-    intervalSeconds: String(state.intervalSeconds),
-    start: schedulerStartToIso(state.start),
-    triggerCount: String(state.triggerCount),
-    type: state.type,
+    schedules: JSON.stringify(schedules),
   });
   return `${path}?${params.toString()}`;
 }
 
 function formatSchedulerTime(value) {
-  return String(value || '').replace('T', ' ').replace('.000Z', 'Z');
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  const pad = (part) => String(part).padStart(2, '0');
+  return [
+    date.getFullYear(),
+    pad(date.getMonth() + 1),
+    pad(date.getDate()),
+  ].join('-') + ` ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
 function resetSchedulerDisplay(summary = 'ready') {
   setTextIfPresent('scheduler-summary', summary);
+  document.getElementById('scheduler-list-body')?.replaceChildren();
   document.getElementById('scheduler-timeline')?.replaceChildren();
-  document.getElementById('scheduler-type-grid')?.replaceChildren();
   document.getElementById('scheduler-event-log')?.replaceChildren();
 }
 
 function setSchedulerRunning(isRunning) {
-  const runButton = document.getElementById('scheduler-run');
-  if (runButton) runButton.disabled = isRunning;
+  const startButton = document.getElementById('scheduler-start');
+  const registerButton = document.getElementById('scheduler-register');
+  if (startButton) startButton.disabled = isRunning;
+  if (registerButton) registerButton.disabled = isRunning;
 }
 
 function abortSchedulerRun() {
@@ -956,67 +983,64 @@ function formatSchedulerEvent(event) {
   return `${event.type}: ${event.scheduleID} @ ${formatSchedulerTime(event.nextInvokeTime)}`;
 }
 
-function renderSchedulerLab(payload) {
-  const selected = payload.selected || {};
-  const current = payload.current || {};
-  const stateText = current.state ? ` | ${current.state.toLowerCase()}` : '';
+function schedulerStatusClass(status) {
+  return String(status || 'ready').toLowerCase();
+}
+
+function renderSchedulerRegistry(payload = {}) {
+  const schedules = payload.schedules || playgroundState.scheduler.registered;
+  const events = payload.events || [];
+  const running = schedules.filter((item) => item.state === 'RUNNING').length;
+  const invoked = schedules.reduce((sum, item) => sum + (Number(item.runs) || 0), 0);
   setTextIfPresent(
     'scheduler-summary',
-    `${selected.type} | start ${formatSchedulerTime(payload.startTime)} | ${payload.triggerCount} trigger(s) | delay ${payload.delayMs || 0}ms${stateText}`,
+    `${schedules.length} schedule(s) | running ${running} | invoked ${invoked}${payload.ok ? ' | completed' : ''}`,
   );
 
-  const timeline = document.getElementById('scheduler-timeline');
-  if (timeline) {
-    const runs = [...(selected.runs || [])];
-    if (current.step && !runs.some((run) => run.step === current.step)) {
-      runs.push({
-        after: current.after || current.nextInvokeTime || '',
-        before: current.before || current.nextInvokeTime || '',
-        delayMs: current.delayMs,
-        state: current.state,
-        step: current.step,
-      });
-    }
-    timeline.replaceChildren(...runs.map((run) => {
-      const item = document.createElement('article');
-      item.className = `scheduler-step ${String(run.state || '').toLowerCase()}`;
-      item.innerHTML = `
-        <strong>#${run.step}</strong>
-        <span>${formatSchedulerTime(run.before)}</span>
-        <span>${run.after ? formatSchedulerTime(run.after) : String(run.state || '').toLowerCase()}</span>
-        <span>${run.delayMs || 0}ms job</span>
+  const body = document.getElementById('scheduler-list-body');
+  if (body) {
+    body.replaceChildren(...schedules.map((schedule) => {
+      const row = document.createElement('tr');
+      const stateClass = schedulerStatusClass(schedule.state);
+      const remainingMs = Number(schedule.remainingMs) || 0;
+      const stateLabel = schedule.state === 'SCHEDULED' && remainingMs > 0
+        ? `WAIT ${Math.ceil(remainingMs / 1000)}s`
+        : schedule.state || 'READY';
+      row.className = stateClass;
+      row.innerHTML = `
+        <td>${schedule.id}</td>
+        <td>${schedule.name}</td>
+        <td>${schedule.type}</td>
+        <td>${formatSchedulerTime(schedule.nextInvokeTime || schedule.start)}</td>
+        <td>${schedule.delayMs || 0}ms</td>
+        <td><span class="scheduler-status-badge ${stateClass}">${stateLabel}</span></td>
+        <td>${schedule.runs || 0}/${schedule.triggerCount || 1}</td>
       `;
-      return item;
-    }));
-  }
-
-  const grid = document.getElementById('scheduler-type-grid');
-  if (grid) {
-    grid.replaceChildren(...(payload.catalog || []).map((item) => {
-      const card = document.createElement('article');
-      card.className = `scheduler-type-card${item.type === selected.type ? ' active' : ''}`;
-      const title = document.createElement('strong');
-      title.textContent = item.type;
-      const label = document.createElement('span');
-      label.textContent = item.label;
-      const before = document.createElement('small');
-      before.textContent = `from ${formatSchedulerTime(item.before)}`;
-      const after = document.createElement('small');
-      after.textContent = `next ${formatSchedulerTime(item.after)}`;
-      const description = document.createElement('p');
-      description.textContent = item.description;
-      card.append(title, label, before, after, description);
-      return card;
+      return row;
     }));
   }
 
   const log = document.getElementById('scheduler-event-log');
   if (log) {
-    log.replaceChildren(...(payload.events || []).map((event) => {
+    log.replaceChildren(...events.slice(-80).map((event) => {
       const item = document.createElement('li');
-      item.textContent = event.type === 'TIMER'
-        ? `${event.type}: ${event.scheduleID} after ${event.delayMs}ms`
-        : formatSchedulerEvent(event);
+      item.textContent = formatSchedulerEvent(event);
+      return item;
+    }));
+  }
+
+  const timeline = document.getElementById('scheduler-timeline');
+  if (timeline) {
+    timeline.replaceChildren(...events.slice(-6).map((event) => {
+      const item = document.createElement('article');
+      item.className = `scheduler-step ${schedulerStatusClass(event.type)}`;
+      const time = event.completedAt || event.nextInvokeTime || event.before || '';
+      item.innerHTML = `
+        <strong>${event.scheduleID || 'scheduler'}</strong>
+        <span>${event.type}</span>
+        <span>${formatSchedulerTime(time)}</span>
+        <span>${event.step ? `run #${event.step}` : 'registry'}</span>
+      `;
       return item;
     }));
   }
@@ -1052,15 +1076,21 @@ async function readSchedulerEventStream(url, signal, onEvent) {
 
 async function runSchedulerLab() {
   abortSchedulerRun();
-  resetSchedulerDisplay('running');
+  if (playgroundState.scheduler.registered.length === 0) {
+    registerSchedulerFromControls();
+  }
+  renderSchedulerRegistry({
+    schedules: playgroundState.scheduler.registered,
+    events: [{ type: 'STARTED', scheduleID: 'registry', nextInvokeTime: new Date().toISOString() }],
+  });
   const controller = new AbortController();
   schedulerAbortController = controller;
   setSchedulerRunning(true);
 
   try {
-    await readSchedulerEventStream(schedulerLabUrl('/api/scheduler/lab/events'), controller.signal, (event) => {
+    await readSchedulerEventStream(schedulerRegistryUrl('/api/scheduler/registry/events'), controller.signal, (event) => {
       if (event.type === 'snapshot' || event.type === 'result') {
-        renderSchedulerLab(event.payload);
+        renderSchedulerRegistry(event.payload);
       }
     });
   } catch (error) {
@@ -1077,13 +1107,22 @@ async function runSchedulerLab() {
 
 function syncSchedulerControls() {
   const state = playgroundState.scheduler;
+  document.getElementById('scheduler-name-control').value = state.name;
   document.getElementById('scheduler-type-control').value = state.type;
   document.getElementById('scheduler-start-control').value = state.start;
+  document.getElementById('scheduler-end-control').value = state.end;
+  document.getElementById('scheduler-no-end-control').checked = state.noEnd;
   document.getElementById('scheduler-interval-control').value = String(state.intervalSeconds);
   document.getElementById('scheduler-delay-ms').value = String(state.delayMs);
   document.getElementById('scheduler-fixed-hour-control').value = String(state.fixedHour);
   document.getElementById('scheduler-fixed-day-control').value = String(state.fixedDay);
   document.getElementById('scheduler-trigger-count-control').value = String(state.triggerCount);
+  document.querySelectorAll('[name="scheduler-type-radio"]').forEach((input) => {
+    input.checked = input.value === state.type;
+  });
+  document.querySelectorAll('[data-scheduler-day]').forEach((input) => {
+    input.checked = state.weekdays.includes(Number(input.dataset.schedulerDay));
+  });
 }
 
 function updateSchedulerStateFromControls() {
@@ -1094,27 +1133,81 @@ function updateSchedulerStateFromControls() {
   const triggerCount = parseFiniteNumberControl('scheduler-trigger-count-control');
   if ([intervalSeconds, delayMs, fixedHour, fixedDay, triggerCount].some((value) => value === null)) return;
 
+  playgroundState.scheduler.name = document.getElementById('scheduler-name-control').value.trim() || 'Schedule';
   playgroundState.scheduler.type = document.getElementById('scheduler-type-control').value;
   playgroundState.scheduler.start = document.getElementById('scheduler-start-control').value;
+  playgroundState.scheduler.end = document.getElementById('scheduler-end-control').value;
+  playgroundState.scheduler.noEnd = document.getElementById('scheduler-no-end-control').checked;
   playgroundState.scheduler.intervalSeconds = Math.max(1, Math.min(86400, Math.round(intervalSeconds)));
   playgroundState.scheduler.delayMs = Math.max(0, Math.min(SCHEDULER_MAX_DELAY_MS, Math.round(delayMs)));
   playgroundState.scheduler.fixedHour = Math.max(0, Math.min(23, Math.round(fixedHour)));
   playgroundState.scheduler.fixedDay = Math.max(1, Math.min(31, Math.round(fixedDay)));
   playgroundState.scheduler.triggerCount = Math.max(1, Math.min(12, Math.round(triggerCount)));
+  playgroundState.scheduler.weekdays = [...document.querySelectorAll('[data-scheduler-day]:checked')]
+    .map((input) => Number(input.dataset.schedulerDay));
   syncSchedulerControls();
+}
+
+function setSchedulerType(type) {
+  playgroundState.scheduler.type = type;
+  document.getElementById('scheduler-type-control').value = type;
+  syncSchedulerControls();
+}
+
+function registerSchedulerFromControls() {
+  updateSchedulerStateFromControls();
+  const state = playgroundState.scheduler;
+  const schedule = {
+    delayMs: state.delayMs,
+    end: state.noEnd ? '' : schedulerDateTimeToIso(state.end),
+    fixedDay: state.fixedDay,
+    fixedHour: state.fixedHour,
+    id: `SCH-${String(schedulerSequence).padStart(3, '0')}`,
+    intervalSeconds: state.intervalSeconds,
+    name: state.name,
+    nextInvokeTime: schedulerDateTimeToIso(state.start),
+    noEnd: state.noEnd,
+    runs: 0,
+    start: schedulerDateTimeToIso(state.start),
+    state: 'READY',
+    triggerCount: state.triggerCount,
+    type: state.type,
+    weekdays: state.weekdays,
+  };
+  schedulerSequence += 1;
+  state.registered.push(schedule);
+  renderSchedulerRegistry({ schedules: state.registered, events: [] });
+  return schedule;
+}
+
+function querySchedulerRegistry() {
+  renderSchedulerRegistry({
+    schedules: playgroundState.scheduler.registered,
+    events: [{
+      type: 'QUERY',
+      scheduleID: 'registry',
+      nextInvokeTime: new Date().toISOString(),
+    }],
+  });
 }
 
 function resetSchedulerLab() {
   abortSchedulerRun();
   Object.assign(playgroundState.scheduler, {
     delayMs: 1000,
+    end: '2026-02-28T18:00',
     fixedDay: 31,
     fixedHour: 6,
-    intervalSeconds: 60,
+    intervalSeconds: 5,
+    name: 'Monthly close',
+    noEnd: false,
+    registered: [],
     start: '2026-01-31T09:30',
-    triggerCount: 3,
-    type: 'MONTHLY',
+    triggerCount: 4,
+    type: 'INTERVAL',
+    weekdays: [1, 2, 3, 4, 5],
   });
+  schedulerSequence = 1;
   syncSchedulerControls();
   setSchedulerRunning(false);
   resetSchedulerDisplay();
@@ -1461,18 +1554,49 @@ function bindEvents() {
   }
 
   [
+    'scheduler-name-control',
     'scheduler-type-control',
     'scheduler-start-control',
+    'scheduler-end-control',
+    'scheduler-no-end-control',
     'scheduler-interval-control',
     'scheduler-delay-ms',
     'scheduler-fixed-hour-control',
     'scheduler-fixed-day-control',
     'scheduler-trigger-count-control',
   ].forEach((id) => document.getElementById(id).addEventListener('input', updateSchedulerStateFromControls));
-  document.getElementById('scheduler-run').addEventListener('click', () => {
+  document.querySelectorAll('[name="scheduler-type-radio"]').forEach((input) => {
+    input.addEventListener('input', () => setSchedulerType(input.value));
+  });
+  document.querySelectorAll('[data-scheduler-day]').forEach((input) => {
+    input.addEventListener('input', updateSchedulerStateFromControls);
+  });
+  document.getElementById('scheduler-select-days').addEventListener('click', () => {
+    document.querySelectorAll('[data-scheduler-day]').forEach((input) => {
+      input.checked = true;
+    });
+    updateSchedulerStateFromControls();
+  });
+  document.getElementById('scheduler-clear-days').addEventListener('click', () => {
+    document.querySelectorAll('[data-scheduler-day]').forEach((input) => {
+      input.checked = false;
+    });
+    updateSchedulerStateFromControls();
+  });
+  document.getElementById('scheduler-register').addEventListener('click', registerSchedulerFromControls);
+  document.getElementById('scheduler-start').addEventListener('click', () => {
     updateSchedulerStateFromControls();
     runSchedulerLab().catch((error) => setTextIfPresent('scheduler-summary', error.message));
   });
+  document.getElementById('scheduler-stop').addEventListener('click', () => {
+    abortSchedulerRun();
+    setSchedulerRunning(false);
+    renderSchedulerRegistry({
+      schedules: playgroundState.scheduler.registered.map((item) => ({ ...item, state: item.state === 'RUNNING' ? 'STOPPED' : item.state })),
+      events: [{ type: 'STOPPED', scheduleID: 'registry', nextInvokeTime: new Date().toISOString() }],
+    });
+  });
+  document.getElementById('scheduler-query').addEventListener('click', querySchedulerRegistry);
   document.getElementById('scheduler-reset').addEventListener('click', resetSchedulerLab);
 
   [

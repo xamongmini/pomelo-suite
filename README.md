@@ -6,7 +6,8 @@ Pomelo Suite is an npm workspace for browser and Node.js packages that are being
 
 - Root workspace: `0.1.0`
 - `@pomelo-suite/spangrid`: `0.1.1` (patch release)
-- Initial public packages: `0.1.0`
+- `@pomelo-suite/timeline`: `0.1.1` (patch release)
+- Other public packages: `0.1.0`
 
 Initial public packages:
 
@@ -66,6 +67,24 @@ npm run pack:dry-run
 npm run package-studio
 npm run runtime-playground
 ```
+
+## Ecosystem
+
+Pomelo Suite is the foundational layer of a three-project open-source stack:
+
+| Layer | Project | Role |
+|-------|---------|------|
+| **Primitives** | **Pomelo Suite** (this repo) | Canvas UI components and Node.js runtime utilities |
+| Format + Engine | [XCON Viewer](https://github.com/xamongmini/xcon-viewer) | Document format, safe renderer, CLI, and framework adapters that use Pomelo Suite internally |
+| Product | XV Desk | Electron developer workbench — multi-terminal, MCP bridge, XCON live preview |
+
+You do not need XCON Viewer to use Pomelo Suite packages.
+SpanGrid, scheduler, workqueue, and the other packages work independently
+in any browser or Node.js project.
+
+If you want to see how Pomelo Suite components are used to render rich visual
+documents from LLM output, see
+[XCON Viewer — docs/ecosystem.md](https://github.com/xamongmini/xcon-viewer/blob/main/docs/ecosystem.md).
 
 ## License
 

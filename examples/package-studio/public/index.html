@@ -232,41 +232,91 @@
       <div class="package-head">
         <div>
           <p class="eyebrow">@pomelo-suite/scheduler</p>
-          <h2>Scheduler timing lab</h2>
+          <h2>Schedule registry and live execution lab</h2>
         </div>
         <code>npm install @pomelo-suite/scheduler</code>
       </div>
-      <div class="studio-layout">
-        <div class="stage-panel">
+      <div class="studio-layout single-panel">
+        <div class="stage-panel scheduler-workbench">
+          <div class="scheduler-tabs" role="tablist" aria-label="Scheduler views">
+            <button class="scheduler-tab active" type="button">Schedule Info</button>
+            <button class="scheduler-tab" type="button">Schedule Edit</button>
+          </div>
+          <div class="scheduler-form-panel">
+            <div class="scheduler-fieldset">
+              <span class="scheduler-fieldset-title">Schedule Type</span>
+              <div class="scheduler-type-row">
+                <label><input type="radio" name="scheduler-type-radio" value="ONETIME"> Once</label>
+                <label><input type="radio" name="scheduler-type-radio" value="INTERVAL" checked> Interval</label>
+                <label><input type="radio" name="scheduler-type-radio" value="DAILY"> Daily</label>
+                <label><input type="radio" name="scheduler-type-radio" value="WEEKLY"> Weekly</label>
+                <label><input type="radio" name="scheduler-type-radio" value="MONTHLY"> Monthly</label>
+                <label><input type="radio" name="scheduler-type-radio" value="INTERVAL2"> After complete</label>
+              </div>
+              <select id="scheduler-type-control" class="scheduler-hidden-select" aria-label="Schedule type">
+                <option value="ONETIME">ONETIME</option>
+                <option value="INTERVAL" selected>INTERVAL</option>
+                <option value="INTERVAL2">INTERVAL2</option>
+                <option value="MINUTELY">MINUTELY</option>
+                <option value="TIMELY">TIMELY</option>
+                <option value="DAILY">DAILY</option>
+                <option value="WEEKLY">WEEKLY</option>
+                <option value="MONTHLY">MONTHLY</option>
+                <option value="FIXTIME">FIXTIME</option>
+                <option value="FIXDAILY">FIXDAILY</option>
+                <option value="FIXMONTHLY">FIXMONTHLY</option>
+              </select>
+              <div class="scheduler-week-row" aria-label="Weekly days">
+                <label><input type="checkbox" data-scheduler-day="1"> Mon</label>
+                <label><input type="checkbox" data-scheduler-day="2"> Tue</label>
+                <label><input type="checkbox" data-scheduler-day="3"> Wed</label>
+                <label><input type="checkbox" data-scheduler-day="4"> Thu</label>
+                <label><input type="checkbox" data-scheduler-day="5"> Fri</label>
+                <label><input type="checkbox" data-scheduler-day="6"> Sat</label>
+                <label><input type="checkbox" data-scheduler-day="0"> Sun</label>
+                <button id="scheduler-select-days" class="mini-btn" type="button">Select all</button>
+                <button id="scheduler-clear-days" class="mini-btn" type="button">Clear all</button>
+              </div>
+            </div>
+            <div class="scheduler-form-grid">
+              <label class="control-field"><span>Name</span><input id="scheduler-name-control" type="text" value="Monthly close"></label>
+              <label class="control-field"><span>Start time</span><input id="scheduler-start-control" type="datetime-local" value="2026-01-31T09:30"></label>
+              <label class="control-field"><span>End time</span><input id="scheduler-end-control" type="datetime-local" value="2026-02-28T18:00"></label>
+              <label class="control-field check-field"><span>No end limit</span><input id="scheduler-no-end-control" type="checkbox"></label>
+              <label class="control-field"><span>Interval seconds</span><input id="scheduler-interval-control" type="number" min="1" max="86400" value="5"></label>
+              <label class="control-field"><span>Delay ms</span><input id="scheduler-delay-ms" type="number" min="0" max="10000" value="1000"></label>
+              <label class="control-field"><span>Fixed hour</span><input id="scheduler-fixed-hour-control" type="number" min="0" max="23" value="6"></label>
+              <label class="control-field"><span>Fixed day</span><input id="scheduler-fixed-day-control" type="number" min="1" max="31" value="31"></label>
+              <label class="control-field"><span>Trigger count</span><input id="scheduler-trigger-count-control" type="number" min="1" max="12" value="4"></label>
+            </div>
+            <div class="scheduler-actions">
+              <button id="scheduler-register" class="secondary-btn" type="button">Register</button>
+              <button id="scheduler-start" class="primary-btn" type="button">Start</button>
+              <button id="scheduler-stop" class="secondary-btn" type="button">Stop</button>
+              <button id="scheduler-query" class="secondary-btn" type="button">Query</button>
+              <button id="scheduler-reset" class="secondary-btn" type="button">Reset</button>
+            </div>
+          </div>
           <div id="scheduler-summary" class="scheduler-summary">ready</div>
+          <div class="scheduler-table-shell">
+            <table class="scheduler-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Next Time</th>
+                  <th>Delay</th>
+                  <th>Status</th>
+                  <th>Runs</th>
+                </tr>
+              </thead>
+              <tbody id="scheduler-list-body"></tbody>
+            </table>
+          </div>
           <div id="scheduler-timeline" class="scheduler-timeline" aria-label="Selected scheduler run timeline"></div>
-          <div id="scheduler-type-grid" class="scheduler-type-grid" aria-label="Schedule type comparison"></div>
           <ol id="scheduler-event-log" class="scheduler-events"></ol>
         </div>
-        <aside class="inspector-panel" aria-label="Scheduler controls">
-          <h3>Schedule Management</h3>
-          <label class="control-field"><span>Type</span><select id="scheduler-type-control">
-            <option value="ONETIME">ONETIME</option>
-            <option value="INTERVAL">INTERVAL</option>
-            <option value="INTERVAL2">INTERVAL2</option>
-            <option value="MINUTELY">MINUTELY</option>
-            <option value="TIMELY">TIMELY</option>
-            <option value="DAILY">DAILY</option>
-            <option value="WEEKLY">WEEKLY</option>
-            <option value="MONTHLY" selected>MONTHLY</option>
-            <option value="FIXTIME">FIXTIME</option>
-            <option value="FIXDAILY">FIXDAILY</option>
-            <option value="FIXMONTHLY">FIXMONTHLY</option>
-          </select></label>
-          <label class="control-field"><span>Start time</span><input id="scheduler-start-control" type="datetime-local" value="2026-01-31T09:30"></label>
-          <label class="control-field"><span>Interval seconds</span><input id="scheduler-interval-control" type="number" min="1" max="86400" value="60"></label>
-          <label class="control-field"><span>Delay ms</span><input id="scheduler-delay-ms" type="number" min="0" max="10000" value="1000"></label>
-          <label class="control-field"><span>Fixed hour</span><input id="scheduler-fixed-hour-control" type="number" min="0" max="23" value="6"></label>
-          <label class="control-field"><span>Fixed day</span><input id="scheduler-fixed-day-control" type="number" min="1" max="31" value="31"></label>
-          <label class="control-field"><span>Trigger count</span><input id="scheduler-trigger-count-control" type="number" min="1" max="12" value="3"></label>
-          <button id="scheduler-run" class="primary-btn">Run scheduler</button>
-          <button id="scheduler-reset" class="secondary-btn">Reset lab</button>
-        </aside>
       </div>
     </section>
 
